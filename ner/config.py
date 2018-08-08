@@ -4,7 +4,7 @@ parameters = \
 {
     "use_test_file" : True,
     "emb_file" : "../data/emb/emb_50/w2v_allwiki_nkjp300_50",
-    "train_dataset_path" : "../data/train/out.json",
+    "train_dataset_path" : "../data/train/out_small.json",
     "test_dataset_path": "../data/test/poleval_test_ner_2018.json",
     "lowercase" : False,
     "padding" : 50,

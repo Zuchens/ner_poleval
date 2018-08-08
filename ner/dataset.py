@@ -15,7 +15,7 @@ def load_word_vectors(embeddings_path):
         model = FastText.load_word2vec_format(embeddings_path + '.vec')
     if model is None:
         raise Exception("No vaild path to embeddings")
-    index2word = model.index2word
+    index2word = model.index2word[:10]
     word2index = {}
     vectors = np.zeros((len(index2word)+2, model.vector_size))
     for index, word in enumerate(index2word):

@@ -1,0 +1,1170 @@
+{
+  "texts": [
+    {
+      "tokens": [
+        "Zatrzasnął",
+        "drzwi",
+        "od",
+        "mieszkania",
+        ",",
+        "dwa",
+        "razy",
+        "przekręcił",
+        "klucz",
+        ",",
+        "nacisnął",
+        "klamkę",
+        ",",
+        "by",
+        "sprawdzić",
+        ",",
+        "czy",
+        "dobrze",
+        "zamknięte",
+        ",",
+        "zbiegł",
+        "po",
+        "schodach",
+        ",",
+        "minął",
+        "furtkę",
+        ",",
+        "także",
+        "ją",
+        "zamknął",
+        ",",
+        "i",
+        "znalazł",
+        "się",
+        "na",
+        "wąskiej",
+        "uliczce",
+        "między",
+        "ogródkami",
+        ",",
+        "gdzie",
+        "drzemały",
+        "w",
+        "majowym",
+        "słońcu",
+        "trójkątne",
+        "ciemnozielone",
+        "świerki",
+        ",",
+        "jakich",
+        "nie",
+        "było",
+        "w",
+        "pobliżu",
+        "jego",
+        "domu",
+        "."
+      ],
+      "offsets2Entities": {
+        "0": [],
+        "11": [],
+        "17": [],
+        "20": [],
+        "30": [],
+        "32": [],
+        "36": [],
+        "41": [],
+        "52": [],
+        "57": [],
+        "59": [],
+        "68": [],
+        "74": [],
+        "76": [],
+        "79": [],
+        "88": [],
+        "90": [],
+        "94": [],
+        "101": [],
+        "110": [],
+        "112": [],
+        "119": [],
+        "122": [],
+        "130": [],
+        "132": [],
+        "138": [],
+        "144": [],
+        "146": [],
+        "152": [],
+        "155": [],
+        "162": [],
+        "164": [],
+        "166": [],
+        "174": [],
+        "178": [],
+        "181": [],
+        "189": [],
+        "197": [],
+        "204": [],
+        "213": [],
+        "215": [],
+        "221": [],
+        "230": [],
+        "232": [],
+        "240": [],
+        "247": [],
+        "257": [],
+        "271": [],
+        "278": [],
+        "280": [],
+        "287": [],
+        "291": [],
+        "296": [],
+        "298": [],
+        "306": [],
+        "311": [],
+        "315": []
+      },
+      "entities": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ],
+      "text": "Zatrzasnął drzwi od mieszkania, dwa razy przekręcił klucz, nacisnął klamkę, by sprawdzić, czy dobrze zamknięte, zbiegł po schodach, minął furtkę, także ją zamknął, i znalazł się na wąskiej uliczce między ogródkami, gdzie drzemały w majowym słońcu trójkątne ciemnozielone świerki, jakich nie było w pobliżu jego domu. "
+    },
+    {
+      "tokens": [
+        "Bohaterem",
+        "powieści",
+        "Paźniewskiego",
+        "jest",
+        "miasto",
+        ",",
+        "Krzemieniec",
+        "."
+      ],
+      "offsets2Entities": {
+        "0": [],
+        "10": [],
+        "19": [
+          {
+            "text": "Paźniewskiego",
+            "type": "persName",
+            "offsets": [
+              {
+                "from": 19,
+                "to": 32
+              }
+            ]
+          },
+          {
+            "text": "Paźniewskiego",
+            "type": "persName",
+            "subtype": "surname",
+            "offsets": [
+              {
+                "from": 19,
+                "to": 32
+              }
+            ]
+          }
+        ],
+        "33": [],
+        "38": [],
+        "44": [],
+        "46": [
+          {
+            "text": "Krzemieniec",
+            "type": "placeName",
+            "subtype": "settlement",
+            "offsets": [
+              {
+                "from": 46,
+                "to": 57
+              }
+            ]
+          }
+        ],
+        "57": []
+      },
+      "entities": [
+        [],
+        [],
+        [
+          {
+            "text": "Paźniewskiego",
+            "type": "persName",
+            "offsets": [
+              {
+                "from": 19,
+                "to": 32
+              }
+            ]
+          },
+          {
+            "text": "Paźniewskiego",
+            "type": "persName",
+            "subtype": "surname",
+            "offsets": [
+              {
+                "from": 19,
+                "to": 32
+              }
+            ]
+          }
+        ],
+        [],
+        [],
+        [],
+        [
+          {
+            "text": "Krzemieniec",
+            "type": "placeName",
+            "subtype": "settlement",
+            "offsets": [
+              {
+                "from": 46,
+                "to": 57
+              }
+            ]
+          }
+        ],
+        []
+      ],
+      "text": "Bohaterem powieści Paźniewskiego jest miasto, Krzemieniec. "
+    },
+    {
+      "tokens": [
+        "Jak",
+        "za",
+        "czasów",
+        "Słowackiego",
+        "funkcjonuje",
+        "Liceum",
+        "i",
+        "płynie",
+        "Ikwa",
+        ".",
+        "Krzemieniec",
+        "powieściowy",
+        "jest",
+        "tamtym",
+        "Krzemieńcem",
+        ",",
+        "ale",
+        "jest",
+        "także",
+        "miastem",
+        "wywołanym",
+        "z",
+        "osobistej",
+        "pamięci",
+        "Paźniewskiego",
+        ".",
+        "Swoją",
+        "drogę",
+        "do",
+        "tego",
+        "miasta",
+        "autor",
+        "\"",
+        "Krótkich",
+        "dni",
+        "\"",
+        "zaczął",
+        "z",
+        "bardzo",
+        "daleka",
+        ".",
+        "\"",
+        "Nigdy",
+        "nie",
+        "był",
+        "em",
+        "w",
+        "tym",
+        "domu",
+        ",",
+        "a",
+        "przecież",
+        "wszystko",
+        "pamiętam",
+        "doskonale",
+        "\"",
+        "."
+      ],
+      "offsets2Entities": {
+        "0": [],
+        "4": [],
+        "7": [],
+        "14": [
+          {
+            "text": "Słowackiego",
+            "type": "persName",
+            "offsets": [
+              {
+                "from": 14,
+                "to": 25
+              }
+            ]
+          },
+          {
+            "text": "Słowackiego",
+            "type": "persName",
+            "subtype": "surname",
+            "offsets": [
+              {
+                "from": 14,
+                "to": 25
+              }
+            ]
+          }
+        ],
+        "26": [],
+        "38": [
+          {
+            "text": "Liceum",
+            "type": "orgName",
+            "offsets": [
+              {
+                "from": 38,
+                "to": 44
+              }
+            ]
+          }
+        ],
+        "45": [],
+        "47": [],
+        "54": [
+          {
+            "text": "Ikwa",
+            "type": "geogName",
+            "offsets": [
+              {
+                "from": 54,
+                "to": 58
+              }
+            ]
+          }
+        ],
+        "58": [],
+        "60": [
+          {
+            "text": "Krzemieniec",
+            "type": "placeName",
+            "subtype": "settlement",
+            "offsets": [
+              {
+                "from": 60,
+                "to": 71
+              }
+            ]
+          }
+        ],
+        "72": [],
+        "84": [],
+        "89": [],
+        "96": [
+          {
+            "text": "Krzemieńcem",
+            "type": "placeName",
+            "subtype": "settlement",
+            "offsets": [
+              {
+                "from": 96,
+                "to": 107
+              }
+            ]
+          }
+        ],
+        "107": [],
+        "109": [],
+        "113": [],
+        "118": [],
+        "124": [],
+        "132": [],
+        "142": [],
+        "144": [],
+        "154": [],
+        "162": [
+          {
+            "text": "Paźniewskiego",
+            "type": "persName",
+            "offsets": [
+              {
+                "from": 162,
+                "to": 175
+              }
+            ]
+          },
+          {
+            "text": "Paźniewskiego",
+            "type": "persName",
+            "subtype": "surname",
+            "offsets": [
+              {
+                "from": 162,
+                "to": 175
+              }
+            ]
+          }
+        ],
+        "175": [],
+        "177": [],
+        "183": [],
+        "189": [],
+        "192": [],
+        "197": [],
+        "204": [],
+        "210": [],
+        "211": [],
+        "220": [],
+        "223": [],
+        "225": [],
+        "232": [],
+        "234": [],
+        "241": [],
+        "247": [],
+        "249": [],
+        "250": [],
+        "256": [],
+        "260": [],
+        "263": [],
+        "266": [],
+        "268": [],
+        "272": [],
+        "276": [],
+        "278": [],
+        "280": [],
+        "289": [],
+        "298": [],
+        "307": [],
+        "316": [],
+        "317": []
+      },
+      "entities": [
+        [],
+        [],
+        [],
+        [
+          {
+            "text": "Słowackiego",
+            "type": "persName",
+            "offsets": [
+              {
+                "from": 14,
+                "to": 25
+              }
+            ]
+          },
+          {
+            "text": "Słowackiego",
+            "type": "persName",
+            "subtype": "surname",
+            "offsets": [
+              {
+                "from": 14,
+                "to": 25
+              }
+            ]
+          }
+        ],
+        [],
+        [
+          {
+            "text": "Liceum",
+            "type": "orgName",
+            "offsets": [
+              {
+                "from": 38,
+                "to": 44
+              }
+            ]
+          }
+        ],
+        [],
+        [],
+        [
+          {
+            "text": "Ikwa",
+            "type": "geogName",
+            "offsets": [
+              {
+                "from": 54,
+                "to": 58
+              }
+            ]
+          }
+        ],
+        [],
+        [
+          {
+            "text": "Krzemieniec",
+            "type": "placeName",
+            "subtype": "settlement",
+            "offsets": [
+              {
+                "from": 60,
+                "to": 71
+              }
+            ]
+          }
+        ],
+        [],
+        [],
+        [],
+        [
+          {
+            "text": "Krzemieńcem",
+            "type": "placeName",
+            "subtype": "settlement",
+            "offsets": [
+              {
+                "from": 96,
+                "to": 107
+              }
+            ]
+          }
+        ],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [
+          {
+            "text": "Paźniewskiego",
+            "type": "persName",
+            "offsets": [
+              {
+                "from": 162,
+                "to": 175
+              }
+            ]
+          },
+          {
+            "text": "Paźniewskiego",
+            "type": "persName",
+            "subtype": "surname",
+            "offsets": [
+              {
+                "from": 162,
+                "to": 175
+              }
+            ]
+          }
+        ],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ],
+      "text": "Jak za czasów Słowackiego funkcjonuje Liceum i płynie Ikwa. Krzemieniec powieściowy jest tamtym Krzemieńcem, ale jest także miastem wywołanym z osobistej pamięci Paźniewskiego. Swoją drogę do tego miasta autor \"Krótkich dni\" zaczął z bardzo daleka. \"Nigdy nie byłem w tym domu, a przecież wszystko pamiętam doskonale\". "
+    },
+    {
+      "tokens": [
+        "Ale",
+        "dzisiaj",
+        "?",
+        "Jaką",
+        "dzisiaj",
+        "odegra",
+        "rolę",
+        "poetyka",
+        "Przybosia",
+        "?",
+        "Oczywiście",
+        ",",
+        "już",
+        "sam",
+        "fakt",
+        "jej",
+        "istnienia",
+        "jest",
+        "wartością",
+        ".",
+        "Nasza",
+        "literatura",
+        ",",
+        "bogata",
+        "w",
+        "improwizacje",
+        "i",
+        "w",
+        "akty",
+        "strzeliste",
+        ",",
+        "jest",
+        "uboga",
+        "w",
+        "teorie",
+        ".",
+        "Rolę",
+        "teoretyków",
+        "spełniają",
+        "felietoniści",
+        ",",
+        "którzy",
+        "co",
+        "tydzień",
+        "fundują",
+        "szkoły",
+        "i",
+        "formułują",
+        "programy",
+        ".",
+        "Dlatego",
+        "założenia",
+        "teoretyczne",
+        "Przybosia",
+        "obok",
+        "teorii",
+        "Peipera",
+        "i",
+        "Witkacego",
+        ",",
+        "a",
+        "równolegle",
+        "do",
+        "propozycji",
+        "systemów",
+        "Irzykowskiego",
+        "i",
+        "Sandauera",
+        ",",
+        "stanowią",
+        "kapitał",
+        "naszej",
+        "myśli",
+        "krytycznej",
+        ",",
+        "naturalny",
+        "fundament",
+        "każdej",
+        "twórczości",
+        ".",
+        "To",
+        "są",
+        "oczywistości",
+        "."
+      ],
+      "offsets2Entities": {
+        "0": [],
+        "4": [],
+        "11": [],
+        "13": [],
+        "18": [],
+        "26": [],
+        "33": [],
+        "38": [],
+        "46": [
+          {
+            "text": "Przybosia",
+            "type": "persName",
+            "offsets": [
+              {
+                "from": 46,
+                "to": 55
+              }
+            ]
+          },
+          {
+            "text": "Przybosia",
+            "type": "persName",
+            "subtype": "surname",
+            "offsets": [
+              {
+                "from": 46,
+                "to": 55
+              }
+            ]
+          }
+        ],
+        "55": [],
+        "57": [],
+        "67": [],
+        "69": [],
+        "73": [],
+        "77": [],
+        "82": [],
+        "86": [],
+        "96": [],
+        "101": [],
+        "110": [],
+        "112": [],
+        "118": [],
+        "128": [],
+        "130": [],
+        "137": [],
+        "139": [],
+        "152": [],
+        "154": [],
+        "156": [],
+        "161": [],
+        "171": [],
+        "173": [],
+        "178": [],
+        "184": [],
+        "186": [],
+        "192": [],
+        "194": [],
+        "199": [],
+        "210": [],
+        "220": [],
+        "232": [],
+        "234": [],
+        "241": [],
+        "244": [],
+        "252": [],
+        "260": [],
+        "267": [],
+        "269": [],
+        "279": [],
+        "287": [],
+        "289": [],
+        "297": [],
+        "307": [],
+        "319": [
+          {
+            "text": "Przybosia",
+            "type": "persName",
+            "offsets": [
+              {
+                "from": 319,
+                "to": 328
+              }
+            ]
+          },
+          {
+            "text": "Przybosia",
+            "type": "persName",
+            "subtype": "surname",
+            "offsets": [
+              {
+                "from": 319,
+                "to": 328
+              }
+            ]
+          }
+        ],
+        "329": [],
+        "334": [],
+        "341": [
+          {
+            "text": "Peipera",
+            "type": "persName",
+            "offsets": [
+              {
+                "from": 341,
+                "to": 348
+              }
+            ]
+          },
+          {
+            "text": "Peipera",
+            "type": "persName",
+            "subtype": "surname",
+            "offsets": [
+              {
+                "from": 341,
+                "to": 348
+              }
+            ]
+          }
+        ],
+        "349": [],
+        "351": [
+          {
+            "text": "Witkacego",
+            "type": "persName",
+            "offsets": [
+              {
+                "from": 351,
+                "to": 360
+              }
+            ]
+          },
+          {
+            "text": "Witkacego",
+            "type": "persName",
+            "subtype": "addName",
+            "offsets": [
+              {
+                "from": 351,
+                "to": 360
+              }
+            ]
+          }
+        ],
+        "360": [],
+        "362": [],
+        "364": [],
+        "375": [],
+        "378": [],
+        "389": [],
+        "398": [
+          {
+            "text": "Irzykowskiego",
+            "type": "persName",
+            "offsets": [
+              {
+                "from": 398,
+                "to": 411
+              }
+            ]
+          },
+          {
+            "text": "Irzykowskiego",
+            "type": "persName",
+            "subtype": "surname",
+            "offsets": [
+              {
+                "from": 398,
+                "to": 411
+              }
+            ]
+          }
+        ],
+        "412": [],
+        "414": [
+          {
+            "text": "Sandauera",
+            "type": "persName",
+            "offsets": [
+              {
+                "from": 414,
+                "to": 423
+              }
+            ]
+          },
+          {
+            "text": "Sandauera",
+            "type": "persName",
+            "subtype": "surname",
+            "offsets": [
+              {
+                "from": 414,
+                "to": 423
+              }
+            ]
+          }
+        ],
+        "423": [],
+        "425": [],
+        "434": [],
+        "442": [],
+        "449": [],
+        "455": [],
+        "465": [],
+        "467": [],
+        "477": [],
+        "487": [],
+        "494": [],
+        "504": [],
+        "506": [],
+        "509": [],
+        "512": [],
+        "524": []
+      },
+      "entities": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [
+          {
+            "text": "Przybosia",
+            "type": "persName",
+            "offsets": [
+              {
+                "from": 46,
+                "to": 55
+              }
+            ]
+          },
+          {
+            "text": "Przybosia",
+            "type": "persName",
+            "subtype": "surname",
+            "offsets": [
+              {
+                "from": 46,
+                "to": 55
+              }
+            ]
+          }
+        ],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [
+          {
+            "text": "Przybosia",
+            "type": "persName",
+            "offsets": [
+              {
+                "from": 319,
+                "to": 328
+              }
+            ]
+          },
+          {
+            "text": "Przybosia",
+            "type": "persName",
+            "subtype": "surname",
+            "offsets": [
+              {
+                "from": 319,
+                "to": 328
+              }
+            ]
+          }
+        ],
+        [],
+        [],
+        [
+          {
+            "text": "Peipera",
+            "type": "persName",
+            "offsets": [
+              {
+                "from": 341,
+                "to": 348
+              }
+            ]
+          },
+          {
+            "text": "Peipera",
+            "type": "persName",
+            "subtype": "surname",
+            "offsets": [
+              {
+                "from": 341,
+                "to": 348
+              }
+            ]
+          }
+        ],
+        [],
+        [
+          {
+            "text": "Witkacego",
+            "type": "persName",
+            "offsets": [
+              {
+                "from": 351,
+                "to": 360
+              }
+            ]
+          },
+          {
+            "text": "Witkacego",
+            "type": "persName",
+            "subtype": "addName",
+            "offsets": [
+              {
+                "from": 351,
+                "to": 360
+              }
+            ]
+          }
+        ],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [
+          {
+            "text": "Irzykowskiego",
+            "type": "persName",
+            "offsets": [
+              {
+                "from": 398,
+                "to": 411
+              }
+            ]
+          },
+          {
+            "text": "Irzykowskiego",
+            "type": "persName",
+            "subtype": "surname",
+            "offsets": [
+              {
+                "from": 398,
+                "to": 411
+              }
+            ]
+          }
+        ],
+        [],
+        [
+          {
+            "text": "Sandauera",
+            "type": "persName",
+            "offsets": [
+              {
+                "from": 414,
+                "to": 423
+              }
+            ]
+          },
+          {
+            "text": "Sandauera",
+            "type": "persName",
+            "subtype": "surname",
+            "offsets": [
+              {
+                "from": 414,
+                "to": 423
+              }
+            ]
+          }
+        ],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ],
+      "text": "Ale dzisiaj? Jaką dzisiaj odegra rolę poetyka Przybosia? Oczywiście, już sam fakt jej istnienia jest wartością. Nasza literatura, bogata w improwizacje i w akty strzeliste, jest uboga w teorie. Rolę teoretyków spełniają felietoniści, którzy co tydzień fundują szkoły i formułują programy. Dlatego założenia teoretyczne Przybosia obok teorii Peipera i Witkacego, a równolegle do propozycji systemów Irzykowskiego i Sandauera, stanowią kapitał naszej myśli krytycznej, naturalny fundament każdej twórczości. To są oczywistości. "
+    }
+  ]
+}

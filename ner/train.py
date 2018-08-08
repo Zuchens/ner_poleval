@@ -16,6 +16,7 @@ import nltk
 
 from nltk.tokenize.treebank import TreebankWordTokenizer
 
+
 class TreebankSpanTokenizer(TreebankWordTokenizer):
 
     def __init__(self):
@@ -25,7 +26,7 @@ class TreebankSpanTokenizer(TreebankWordTokenizer):
         ix = 0
         for word_token in self.tokenize(text):
             ix = text.find(word_token, ix)
-            end = ix+len(word_token)
+            end = ix + len(word_token)
             yield ix, end
             ix = end
 
@@ -75,8 +76,8 @@ def convert_entities(entities, tokens):
             iob = sorted(iob)
             data = "-".join(iob)
             if data not in label2idx:
-                label2idx_iterator += 1
                 label2idx[data] = label2idx_iterator
+                label2idx_iterator += 1
             idx_iob.append(label2idx[data])
         idx_iobs.append(idx_iob)
     return label2idx, idx_iobs
@@ -86,18 +87,10 @@ def preprocess():
     with open(parameters["train_dataset_path"]) as f:
         unprocessed_data = json.load(f)["texts"]
         unprocessed_data = unprocessed_data
-    if parameters["use_test_file"]:
-
-        with open(parameters["test_dataset_path"]) as f:
-            import nltk
-            # nltk.download()
-            test_data = json.load(f)
-            tokenizer = TreebankSpanTokenizer()
-            test_tokens = [tokenizer.tokenize(x["text"]) for x in test_data]
-            test_spans = [list(tokenizer.span_tokenize(x["text"])) for x in test_data]
-            a =1
-    # TODO add words from train to vocab
     vectors, word2index = load_word_vectors(parameters["emb_file"])
+
+    # TODO add words from train to vocab
+
     tokens = [[word.lower() if parameters["lowercase"] else word for word in doc["tokens"]] for doc in
               unprocessed_data]
     input = [[word2index.get(word, word2index["UNK"]) for word in doc] for doc in tokens]
@@ -105,6 +98,7 @@ def preprocess():
     parameters["padding"] = max([len(doc) for doc in tokens])
     entities = [doc["entities"] for doc in unprocessed_data]
     label2idx, idx_iobs = convert_entities(entities, tokens)
+    idx2label = {v: k for k, v in label2idx.items()}
 
     input = pad_sequences(input, maxlen=parameters["padding"], padding="post")
     uppercase = pad_sequences(uppercase, maxlen=parameters["padding"], padding="post")
@@ -117,28 +111,65 @@ def preprocess():
     mlb_targets.fit([[x] for x in label2idx.values()])
     target = np.asarray([mlb_targets.transform([[i] for i in x]).toarray() for x in idx_iobs]).tolist()
 
-
-
-    input_train,input_val,  uppercase_feature_train, uppercase_feature_val, target_train, target_val = train_test_split(
+    input_train, input_val, uppercase_feature_train, uppercase_feature_val, target_train, target_val = train_test_split(
         input,
         uppercase_feature,
         target,
         test_size=parameters["validation_size"],
         shuffle=False)
 
-
-    model = create_model(vectors, emb_features=vectors.shape[1],feature_size=3,  maxlen=parameters["padding"], output_size=len(target_train[0][0]))
-    model.fit([np.asarray(input_train), np.asarray(uppercase_feature_train)], np.asarray(target_train), batch_size=16, nb_epoch=10,
+    model = create_model(vectors, emb_features=vectors.shape[1], feature_size=3, maxlen=parameters["padding"],
+                         output_size=len(target_train[0][0]))
+    model.fit([np.asarray(input_train), np.asarray(uppercase_feature_train)], np.asarray(target_train), batch_size=16,
+              nb_epoch=10,
               validation_split=0.1,
               verbose=0)
 
-    loss, train_accuracy = model.evaluate([np.asarray(input_train), np.asarray(uppercase_feature_train)], np.asarray(target_train), verbose=0)
+    loss, train_accuracy = model.evaluate([np.asarray(input_train), np.asarray(uppercase_feature_train)],
+                                          np.asarray(target_train), verbose=0)
     print('Accuracy test: %f' % (train_accuracy * 100))
 
-    loss, val_accuracy = model.evaluate([np.asarray(input_val), np.asarray(uppercase_feature_val)], np.asarray(target_val), verbose=0)
+    loss, val_accuracy = model.evaluate([np.asarray(input_val), np.asarray(uppercase_feature_val)],
+                                        np.asarray(target_val), verbose=0)
     print('Accuracy test: %f' % (val_accuracy * 100))
 
-    model.predict([np.asarray(input_val), np.asarray(uppercase_feature_val)], np.asarray(target_val), verbose=0)
+    if parameters["use_test_file"]:
+        with open(parameters["test_dataset_path"]) as f:
+            test_data = json.load(f)
+        tokenizer = TreebankSpanTokenizer()
+        test_tokens = [tokenizer.tokenize(x["text"]) for x in test_data]
+        test_spans = [list(tokenizer.span_tokenize(x["text"])) for x in test_data]
+        input_test = [[word2index.get(word, word2index["UNK"]) for word in doc] for doc in test_tokens]
+        test_uppercase = [[2 if word[0].isupper() else 1 for word in doc] for doc in test_tokens]
+
+        input_test = pad_sequences(input_test, maxlen=parameters["padding"], padding="post")
+        test_uppercase = pad_sequences(test_uppercase, maxlen=parameters["padding"], padding="post")
+
+        uppercase_feature_test = np.asarray(
+            [mlb_uppercase.transform([[i] for i in x]).toarray() for x in test_uppercase]).tolist()
+
+        predictions = model.predict([np.asarray(input_test), np.asarray(uppercase_feature_test)], verbose=0)
+        print(predictions)
+
+        test_labels = []
+        for sent_idx, sentence in enumerate(test_tokens):
+            test_data[sent_idx]["answers_list"] = []
+            consecutive = []
+            for token_idx, token in enumerate(sentence):
+                if token_idx< len(predictions[sent_idx]):
+                    idx = np.argmax(predictions[sent_idx][token_idx])
+
+                    labels = idx2label[idx].split("-")
+                    for label in labels:
+                        if label != 'O' and label != 'P':
+                            print(token + " " + idx2label[idx] + " " + str(test_spans[sent_idx][token_idx]))
+                            # if consecutive != [] and :
+                            # test_data[sent_idx]["answers"]+=''
+                # else:
+                #     print(token)
+
+
+
 
 if __name__ == "__main__":
     preprocess()
