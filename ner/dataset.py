@@ -6,8 +6,8 @@ from gensim.models import KeyedVectors
 from gensim.models.wrappers import FastText
 import numpy as np
 
-SPECIAL_CHARS = ["unk", ".",",","-","?","!"]
-# SPECIAL_CHARS = ["unk"]
+#SPECIAL_CHARS = ["unk", ".",",","-","?","!"]
+SPECIAL_CHARS = ["UNK"]
 
 
 def load_word_vectors(embeddings_path):
