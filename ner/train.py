@@ -1,175 +1,79 @@
-from collections import defaultdict
-import json
-
-import keras
-from keras_preprocessing.sequence import pad_sequences
-from sklearn.model_selection import train_test_split
-
-from ner.config import parameters
-from ner.dataset import load_word_vectors
-from sklearn.preprocessing import OneHotEncoder
 import numpy as np
-import nltk
+import keras
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder
+
+from ner.config import parameters, search_parameters
+from ner.dataset import load_word_vectors
 from ner.model import create_model
-
-import nltk
-
-from nltk.tokenize.treebank import TreebankWordTokenizer
+from ner.preprocess import preprocess_training_data
+from ner.test import predict_test
 
 
-class TreebankSpanTokenizer(TreebankWordTokenizer):
+def train_and_eval(vectors, word2index, model_params):
 
-    def __init__(self):
-        self._word_tokenizer = TreebankWordTokenizer()
-
-    def span_tokenize(self, text):
-        ix = 0
-        for word_token in self.tokenize(text):
-            ix = text.find(word_token, ix)
-            end = ix + len(word_token)
-            yield ix, end
-            ix = end
-
-    def tokenize(self, text):
-        return self._word_tokenizer.tokenize(text)
-
-
-def convert_entities(entities, tokens):
-    iobs = []
-    for sentence_entities in entities:
-        # TODO implement cutting sentence size
-        iob = [set("P", )] * parameters["padding"]
-        for idx, entity in enumerate(sentence_entities):
-            val = set(iob[idx])
-            val.add("O")
-            iob[idx] = val
-
-            if len(entity) != 0:
-                for label in entity:
-                    if label.get("subtype"):
-                        ne = label["type"] + "_" + label["subtype"]
-                    else:
-                        ne = label["type"]
-
-                    for i in range(len(label["offsets"])):
-                        val = set(iob[idx + i])
-                        if (i == 0):
-                            val.add("B_" + ne)
-                        else:
-                            val.add("I_" + ne)
-                        iob[idx + i] = val
-        iobs.append(iob)
-    # for doc, iob in zip(tokens, iobs):
-    #     for idx, word in enumerate(doc):
-    #
-    #         if iob[idx] != set(("P", "O")):
-    #             print(word + " " + str(iob[idx]))
-
-    label2idx = {}
-    label2idx_iterator = 0
-
-    idx_iobs = []
-
-    for iob_sentence in iobs:
-        idx_iob = []
-        for iob in iob_sentence:
-            iob = sorted(iob)
-            data = "-".join(iob)
-            if data not in label2idx:
-                label2idx[data] = label2idx_iterator
-                label2idx_iterator += 1
-            idx_iob.append(label2idx[data])
-        idx_iobs.append(idx_iob)
-    return label2idx, idx_iobs
-
-
-def preprocess():
-    with open(parameters["train_dataset_path"]) as f:
-        unprocessed_data = json.load(f)["texts"]
-        unprocessed_data = unprocessed_data
-    vectors, word2index = load_word_vectors(parameters["emb_file"])
-
-    # TODO add words from train to vocab
-
-    tokens = [[word.lower() if parameters["lowercase"] else word for word in doc["tokens"]] for doc in
-              unprocessed_data]
-    input = [[word2index.get(word, word2index["UNK"]) for word in doc] for doc in tokens]
-    uppercase = [[2 if word[0].isupper() else 1 for word in doc] for doc in tokens]
-    parameters["padding"] = max([len(doc) for doc in tokens])
-    entities = [doc["entities"] for doc in unprocessed_data]
-    label2idx, idx_iobs = convert_entities(entities, tokens)
-    idx2label = {v: k for k, v in label2idx.items()}
-
-    input = pad_sequences(input, maxlen=parameters["padding"], padding="post")
-    uppercase = pad_sequences(uppercase, maxlen=parameters["padding"], padding="post")
-
-    mlb_uppercase = OneHotEncoder()
-    mlb_uppercase.fit([[0], [1], [2]])
-    uppercase_feature = np.asarray([mlb_uppercase.transform([[i] for i in x]).toarray() for x in uppercase]).tolist()
-
-    mlb_targets = OneHotEncoder()
-    mlb_targets.fit([[x] for x in label2idx.values()])
-    target = np.asarray([mlb_targets.transform([[i] for i in x]).toarray() for x in idx_iobs]).tolist()
+    idx_iobs, input, label2idx, features = preprocess_training_data(word2index, model_params)
+    features = np.asarray(features)
+    target = one_hot_encode(idx_iobs, label2idx)
 
     input_train, input_val, uppercase_feature_train, uppercase_feature_val, target_train, target_val = train_test_split(
         input,
-        uppercase_feature,
+        features,
         target,
         test_size=parameters["validation_size"],
-        shuffle=False)
+        shuffle=True)
 
-    model = create_model(vectors, emb_features=vectors.shape[1], feature_size=3, maxlen=parameters["padding"],
-                         output_size=len(target_train[0][0]))
+    model = create_model(vectors, emb_features=vectors.shape[1], feature_size=3, maxlen=model_params["padding"],
+                         output_size=len(target_train[0][0]), model_parameters=model_params)
+
+    idx2label = {v: k for k, v in label2idx.items()}
+
     model.fit([np.asarray(input_train), np.asarray(uppercase_feature_train)], np.asarray(target_train), batch_size=16,
-              nb_epoch=10,
+              nb_epoch=parameters["epochs"],
               validation_split=0.1,
-              verbose=0)
+              verbose=2)
 
     loss, train_accuracy = model.evaluate([np.asarray(input_train), np.asarray(uppercase_feature_train)],
-                                          np.asarray(target_train), verbose=0)
-    print('Accuracy test: %f' % (train_accuracy * 100))
+                                          np.asarray(target_train), verbose=2)
+    values = 'Accuracy train: %f\n' % (train_accuracy * 100)
 
+    values += test_validation(idx2label, input_val, model, target_val, uppercase_feature_val, word2index, model_params)
+
+    test_data = predict_test(idx2label, model, word2index, model_params)
+    print(values)
+    return values, test_data
+
+
+def test_validation(idx2label, input_val, model, target_val, uppercase_feature_val, word2index, model_params):
+    index2word = dict((v, k) for k, v in word2index.items())
     loss, val_accuracy = model.evaluate([np.asarray(input_val), np.asarray(uppercase_feature_val)],
-                                        np.asarray(target_val), verbose=0)
-    print('Accuracy test: %f' % (val_accuracy * 100))
+                                        np.asarray(target_val), verbose=2)
+    values = 'Accuracy val: %f \n' % (val_accuracy * 100)
+    val_predictions = model.predict([np.asarray(input_val), np.asarray(uppercase_feature_val)], verbose=2)
+    all = 0
+    true = 0
+    for sent_idx in range(input_val.shape[0]):
+        for token_idx in range(input_val.shape[1]):
+            if token_idx >= model_params["padding"]:
+                break
+            if 0 != input_val[sent_idx][token_idx]:
+                idx = np.argmax(val_predictions[sent_idx][token_idx])
+                if idx2label[idx] != 'O-P':
+                    if np.argmax(target_val[sent_idx][token_idx]) == idx:
+                        true+=1
+                    all+=1
+                # print(str(input_val[sent_idx][token_idx]) + " " + index2word[] + " " +idx2label[idx])
 
-    if parameters["use_test_file"]:
-        with open(parameters["test_dataset_path"]) as f:
-            test_data = json.load(f)
-        tokenizer = TreebankSpanTokenizer()
-        test_tokens = [tokenizer.tokenize(x["text"]) for x in test_data]
-        test_spans = [list(tokenizer.span_tokenize(x["text"])) for x in test_data]
-        input_test = [[word2index.get(word, word2index["UNK"]) for word in doc] for doc in test_tokens]
-        test_uppercase = [[2 if word[0].isupper() else 1 for word in doc] for doc in test_tokens]
+    acc = true/all if all != 0 else 0
+    return values+ " Value on entitied "+  str(acc)
 
-        input_test = pad_sequences(input_test, maxlen=parameters["padding"], padding="post")
-        test_uppercase = pad_sequences(test_uppercase, maxlen=parameters["padding"], padding="post")
-
-        uppercase_feature_test = np.asarray(
-            [mlb_uppercase.transform([[i] for i in x]).toarray() for x in test_uppercase]).tolist()
-
-        predictions = model.predict([np.asarray(input_test), np.asarray(uppercase_feature_test)], verbose=0)
-        print(predictions)
-
-        test_labels = []
-        for sent_idx, sentence in enumerate(test_tokens):
-            test_data[sent_idx]["answers_list"] = []
-            consecutive = []
-            for token_idx, token in enumerate(sentence):
-                if token_idx< len(predictions[sent_idx]):
-                    idx = np.argmax(predictions[sent_idx][token_idx])
-
-                    labels = idx2label[idx].split("-")
-                    for label in labels:
-                        if label != 'O' and label != 'P':
-                            print(token + " " + idx2label[idx] + " " + str(test_spans[sent_idx][token_idx]))
-                            # if consecutive != [] and :
-                            # test_data[sent_idx]["answers"]+=''
-                # else:
-                #     print(token)
-
-
+def one_hot_encode(idx_iobs, label2idx):
+    mlb_targets = OneHotEncoder(sparse=False)
+    mlb_targets.fit([[x] for x in label2idx.values()])
+    target = [mlb_targets.transform([[i] for i in x]) for x in idx_iobs]
+    return target
 
 
 if __name__ == "__main__":
-    preprocess()
+    vectors, word2index = load_word_vectors(parameters["emb_file"])
+    train_and_eval(vectors, word2index, search_parameters)

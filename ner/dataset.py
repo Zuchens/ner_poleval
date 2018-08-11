@@ -1,11 +1,14 @@
 import os
 
-
 import os
 
 from gensim.models import KeyedVectors
 from gensim.models.wrappers import FastText
 import numpy as np
+
+SPECIAL_CHARS = ["unk", ".",",","-","?","!"]
+# SPECIAL_CHARS = ["unk"]
+
 
 def load_word_vectors(embeddings_path):
     model = None
@@ -15,19 +18,20 @@ def load_word_vectors(embeddings_path):
         model = FastText.load_word2vec_format(embeddings_path + '.vec')
     if model is None:
         raise Exception("No vaild path to embeddings")
-    index2word = model.index2word[:10]
+    index2word = model.index2word
     word2index = {}
-    vectors = np.zeros((len(index2word)+2, model.vector_size))
+    vectors = np.zeros((len(index2word) + len(SPECIAL_CHARS) + 1, model.vector_size))
     for index, word in enumerate(index2word):
-        word2index[word] = index
-        vectors[index, :] = model[word]
+        word2index[word] = index + 1
+        vectors[index + 1, :] = model[word]
 
-    index2word.append("UNK")
-    word2index["UNK"] = len(index2word)-1
-    vectors[word2index["UNK"] , :] = np.random.rand(model.vector_size)
-    index2word.append("PAD")
-    word2index["PAD"] = len(index2word)-1
-    vectors[word2index["PAD"], :] = np.zeros(model.vector_size)
+    for idx, word in enumerate(SPECIAL_CHARS):
+        assert word not in index2word
+        index2word.append(word)
+        word2index[word] = index + idx + 2
+        vectors[word2index[word], :] = np.random.rand(model.vector_size)
+
+    index2word.append("pad")
+    word2index["pad"] = 0
+    vectors[0, :] = np.zeros(model.vector_size)
     return vectors, word2index
-
-
