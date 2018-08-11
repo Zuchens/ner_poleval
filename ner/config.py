@@ -11,7 +11,8 @@ parameters = \
     "test_dataset_path": "../data/test/poleval_test_ner_2018.json",
 
     "validation_size":0.1,
-    'epochs': 10
+    'epochs': 10,
+    "unknown": "UNKNOWN"
 
 }
 

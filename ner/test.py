@@ -33,7 +33,7 @@ def predict_test(idx2label, model, word2index, model_params):
                 for t_token, t_token_span in zip(t_sent, t_span):
                     assert sent[t_token_span[0]:t_token_span[1]] == t_token
                     assert text[span[0]+t_token_span[0]:span[0]+t_token_span[1]] == t_token
-            input_test = [[word2index.get(word, word2index["UNK"]) for word in doc] for doc in test_tokens]
+            input_test = [[word2index.get(word, word2index[parameters["unknown"]]) for word in doc] for doc in test_tokens]
             features = create_features(test_tokens)
 
             input_test = pad_sequences(input_test, maxlen=model_params["padding"], padding="post")
@@ -47,21 +47,25 @@ def predict_test(idx2label, model, word2index, model_params):
                 consecutive = []
                 for token_idx, token in enumerate(sentence):
                     word_label = {}
-                    # TODO quickfix
+                    main_word_label = {}
+                    #TODO fix here and in master - only one answer can be got
                     if token_idx >= model_params["padding"]:
                         break
                     if token_idx < len(predictions[sent_idx]):
                         idx = np.argmax(predictions[sent_idx][token_idx])
-                        labels = idx2label[idx].split("-")
 
-                        for label in labels:
-                            # if label != 'O' and label != 'P':
-                                # print(token + " " + idx2label[idx] + " " + str(test_spans[sent_idx][token_idx]))
+                        start = test_spans_sentences[sent_idx][0]+test_spans[sent_idx][token_idx][0]
+                        end = test_spans_sentences[sent_idx][0] +test_spans[sent_idx][token_idx][1]
+                        word_label[idx2label[idx]] = {"entity": token,
+                                             "span": (start,end)}
+                        subtypes = idx2label[idx].split("_")
+                        if len(subtypes) > 1:
                             start = test_spans_sentences[sent_idx][0]+test_spans[sent_idx][token_idx][0]
                             end = test_spans_sentences[sent_idx][0] +test_spans[sent_idx][token_idx][1]
-                            word_label[label] = {"entity": token,
+                            main_word_label[subtypes[0]] = {"entity": token,
                                                  "span": (start,end)}
-                            assert token == doc["text"][start:end]
+
+                        assert token == doc["text"][start:end]
                     consecutive.append(word_label)
                 test_labels.append(consecutive)
 

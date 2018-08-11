@@ -7,7 +7,9 @@ from gensim.models.wrappers import FastText
 import numpy as np
 
 #SPECIAL_CHARS = ["unk", ".",",","-","?","!"]
-SPECIAL_CHARS = ["UNK"]
+from ner.config import parameters
+
+SPECIAL_CHARS = [parameters["unknown"]]
 
 
 def load_word_vectors(embeddings_path):
