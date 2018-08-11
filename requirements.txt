@@ -1,0 +1,7 @@
+gensim==2.0.0
+numpy==1.15.0
+nltk==3.3
+Keras_Preprocessing==1.0.2
+Keras==2.2.2
+scikit_learn==0.19.2
+tensorflow==1.9.0
