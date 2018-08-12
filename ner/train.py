@@ -43,6 +43,15 @@ def train_and_eval(vectors, word2index, model_params):
 
     test_data = predict_test(idx2label, model, word2index, model_params)
     print(values)
+
+    # serialize model to JSON
+    model_json = model.to_json()
+    with open("generated/model.json", "w") as json_file:
+        json_file.write(model_json)
+    # serialize weights to HDF5
+    model.save_weights("generated/model.h5")
+    print("Saved model to disk")
+
     return values, test_data
 
 
