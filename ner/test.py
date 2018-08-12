@@ -33,7 +33,7 @@ def predict_test(idx2label, model, word2index, model_params):
                 for t_token, t_token_span in zip(t_sent, t_span):
                     assert sent[t_token_span[0]:t_token_span[1]] == t_token
                     assert text[span[0]+t_token_span[0]:span[0]+t_token_span[1]] == t_token
-            input_test = [[word2index.get(word, word2index["UNK"]) for word in doc] for doc in test_tokens]
+            input_test = [[word2index.get(word, word2index["UNKNOWN"]) for word in x] for x in test_tokens]
             features = create_features(test_tokens)
 
             input_test = pad_sequences(input_test, maxlen=model_params["padding"], padding="post")
@@ -75,11 +75,11 @@ def predict_test(idx2label, model, word2index, model_params):
                             label_to_write["stop"] = labels[idx + i][category]["span"][1]
                             del labels[idx + i][category]
                             i += 1
-                        label_to_write["text"] = test_data[sentence_idx]["text"][
-                                                 label_to_write["start"]:label_to_write["stop"]]
+                        label_to_write["text"] = doc["text"][label_to_write["start"]:label_to_write["stop"]]
                         doc['answers']+="{} {} {}\t{}\n".format(
                             label_to_write["category"],label_to_write["start"],label_to_write["stop"],label_to_write["text"]
                         )
+
         return test_data
 
 

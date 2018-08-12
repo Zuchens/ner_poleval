@@ -85,7 +85,7 @@ def preprocess_training_data(word2index, model_parameters):
     # TODO add words from train to vocab
     tokens = [[word.lower() if model_parameters["lowercase"] else word for word in doc["tokens"]] for doc in
               unprocessed_data_sentences]
-    input = [[word2index.get(word, word2index["UNK"]) for word in doc] for doc in tokens]
+    input = [[word2index.get(word, word2index["UNKNOWN"]) for word in doc] for doc in tokens]
     features = create_features(tokens)
     model_parameters["padding"] = max([len(doc) for doc in tokens])
     entities = [doc["entities"] for doc in unprocessed_data_sentences]

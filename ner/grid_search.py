@@ -24,7 +24,7 @@ def grid_search():
 
     idx = 0
     for param in list(grid):
-        with open('../output/'+str(idx)+'_grid_results.csv', 'w+') as f:
+        with open('output/'+str(idx)+'_grid_results.csv', 'w+') as f:
             values = train_and_eval(vectors, word2index, param)
             f.write('{}\t{}'.format(param, values))
             idx+=1

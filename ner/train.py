@@ -1,3 +1,5 @@
+import json
+
 import numpy as np
 import keras
 from sklearn.model_selection import train_test_split
@@ -76,4 +78,13 @@ def one_hot_encode(idx_iobs, label2idx):
 
 if __name__ == "__main__":
     vectors, word2index = load_word_vectors(parameters["emb_file"])
-    train_and_eval(vectors, word2index, search_parameters)
+    values, test_data = train_and_eval(vectors, word2index, search_parameters)
+    import os
+    if not os.path.exists("output"):
+        os.mkdir("output")
+    import datetime
+    dt = datetime.datetime.now()
+    with open('output/train_results-'+str(dt)+'.csv', 'w+') as f:
+        f.write('{}\t{}'.format(search_parameters, values))
+    with open('output/test_results-'+str(dt)+'.json', 'w+') as f:
+        json.dump(test_data, f, indent=2)
