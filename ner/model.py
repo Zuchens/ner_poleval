@@ -24,5 +24,5 @@ def create_model(embeddings, emb_features, feature_size, maxlen, output_size,mod
     model.compile(optimizer=model_parameters['optimizer'], loss='binary_crossentropy', metrics=['acc'])
     from keras.utils import plot_model
     plot_model(model, to_file='model.png', show_shapes=True)
-    model.save('../generated/model.h5')
+    model.save('generated/model.h5')
     return model

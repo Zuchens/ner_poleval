@@ -58,7 +58,7 @@ def test_validation(idx2label, input_val, model, target_val, uppercase_feature_v
                 break
             if 0 != input_val[sent_idx][token_idx]:
                 idx = np.argmax(val_predictions[sent_idx][token_idx])
-                if idx2label[idx] != 'O-P':
+                if idx2label[idx] != 'O' and idx2label[idx] !='P':
                     if np.argmax(target_val[sent_idx][token_idx]) == idx:
                         true+=1
                     all+=1
@@ -76,4 +76,6 @@ def one_hot_encode(idx_iobs, label2idx):
 
 if __name__ == "__main__":
     vectors, word2index = load_word_vectors(parameters["emb_file"])
-    train_and_eval(vectors, word2index, search_parameters)
+    values, test_data = train_and_eval(vectors, word2index, search_parameters)
+    with open(parameters['out_file'], 'w+') as f:
+        f.write(values)
