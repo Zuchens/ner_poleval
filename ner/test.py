@@ -53,19 +53,20 @@ def predict_test(idx2label, model, word2index, model_params):
                         break
                     if token_idx < len(predictions[sent_idx]):
                         idx = np.argmax(predictions[sent_idx][token_idx])
-
-                        start = test_spans_sentences[sent_idx][0]+test_spans[sent_idx][token_idx][0]
-                        end = test_spans_sentences[sent_idx][0] +test_spans[sent_idx][token_idx][1]
-                        word_label[idx2label[idx]] = {"entity": token,
-                                             "span": (start,end)}
-                        subtypes = idx2label[idx].split("_")
-                        if len(subtypes) > 1:
+                        found_label = idx2label[idx]
+                        if found_label != 'O' and found_label != 'P':
                             start = test_spans_sentences[sent_idx][0]+test_spans[sent_idx][token_idx][0]
                             end = test_spans_sentences[sent_idx][0] +test_spans[sent_idx][token_idx][1]
-                            main_word_label[subtypes[0]] = {"entity": token,
+                            word_label[idx2label[idx]] = {"entity": token,
                                                  "span": (start,end)}
+                            subtypes = idx2label[idx].split("_")
+                            if len(subtypes) > 1:
+                                start = test_spans_sentences[sent_idx][0]+test_spans[sent_idx][token_idx][0]
+                                end = test_spans_sentences[sent_idx][0] +test_spans[sent_idx][token_idx][1]
+                                word_label[subtypes[0]] = {"entity": token,
+                                                     "span": (start,end)}
 
-                        assert token == doc["text"][start:end]
+                            assert token == doc["text"][start:end]
                     consecutive.append(word_label)
                 test_labels.append(consecutive)
 
@@ -79,8 +80,7 @@ def predict_test(idx2label, model, word2index, model_params):
                             label_to_write["stop"] = labels[idx + i][category]["span"][1]
                             del labels[idx + i][category]
                             i += 1
-                        label_to_write["text"] = test_data[sentence_idx]["text"][
-                                                 label_to_write["start"]:label_to_write["stop"]]
+                        label_to_write["text"] = doc["text"][label_to_write["start"]:label_to_write["stop"]]
                         doc['answers']+="{} {} {}\t{}\n".format(
                             label_to_write["category"],label_to_write["start"],label_to_write["stop"],label_to_write["text"]
                         )

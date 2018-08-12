@@ -2,7 +2,7 @@ import numpy as np
 import keras
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
-
+import json
 from ner.config import parameters, search_parameters
 from ner.dataset import load_word_vectors
 from ner.model import create_model
@@ -41,6 +41,15 @@ def train_and_eval(vectors, word2index, model_params):
 
     test_data = predict_test(idx2label, model, word2index, model_params)
     print(values)
+
+    # serialize model to JSON
+    model_json = model.to_json()
+    with open("generated/model.json", "w") as json_file:
+        json_file.write(model_json)
+    # serialize weights to HDF5
+    model.save_weights("generated/model.h5")
+    print("Saved model to disk")
+
     return values, test_data
 
 
@@ -77,5 +86,13 @@ def one_hot_encode(idx_iobs, label2idx):
 if __name__ == "__main__":
     vectors, word2index = load_word_vectors(parameters["emb_file"])
     values, test_data = train_and_eval(vectors, word2index, search_parameters)
-    with open(parameters['out_file'], 'w+') as f:
-        f.write(values)
+    import os
+    if not os.path.exists("output"):
+        os.mkdir("output")
+    import datetime
+
+    dt = datetime.datetime.now()
+    with open('output/train_results-'+str(dt)+'.csv', 'w+') as f:
+        f.write('{}\t{}'.format(search_parameters, values))
+    with open('output/test_results-'+str(dt)+'.json', 'w+') as f:
+        json.dump(test_data, f, indent=2)
