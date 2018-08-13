@@ -57,7 +57,7 @@ def predict_test(idx2label, model, word2index, model_params):
 
                         for label in labels:
                             if label != 'O' and label != 'P':
-                                print(token + " " + idx2label[idx] + " " + str(test_spans[sent_idx][token_idx]))
+                                # print(token + " " + idx2label[idx] + " " + str(test_spans[sent_idx][token_idx]))
                                 start = test_spans_sentences[sent_idx][0]+test_spans[sent_idx][token_idx][0]
                                 end = test_spans_sentences[sent_idx][0] +test_spans[sent_idx][token_idx][1]
                                 word_label[label] = {"entity": token,

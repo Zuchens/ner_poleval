@@ -11,13 +11,7 @@ SPECIAL_CHARS = ["UNKNOWN"]
 
 
 def load_word_vectors(embeddings_path):
-    model = None
-    if os.path.isfile(embeddings_path + '.model'):
-        model = KeyedVectors.load(embeddings_path + ".model")
-    if os.path.isfile(embeddings_path + '.vec'):
-        model = FastText.load_word2vec_format(embeddings_path + '.vec')
-    if model is None:
-        raise Exception("No vaild path to embeddings")
+    model = load_emb(embeddings_path)
     index2word = model.index2word
     word2index = {}
     vectors = np.zeros((len(index2word) + len(SPECIAL_CHARS) + 1, model.vector_size))
@@ -35,3 +29,28 @@ def load_word_vectors(embeddings_path):
     word2index["pad"] = 0
     vectors[0, :] = np.zeros(model.vector_size)
     return vectors, word2index
+
+def load_word_vectors_with_dictionary(embeddings_path, word2index = {}):
+    model = load_emb(embeddings_path)
+    vectors = np.zeros((len(word2index), model.vector_size))
+    i = 0
+    for index, word in enumerate(word2index):
+        if word == "PAD":
+            vectors[index, :] = np.zeros(model.vector_size)
+        try:
+            vectors[index, :] = model[word]
+        except KeyError:
+            vectors[index, :] = np.random.rand(model.vector_size)
+            i+=1
+    print("Unknowns "+ str(i))
+    return vectors, word2index
+
+def load_emb(embeddings_path):
+    model = None
+    if os.path.isfile(embeddings_path + '.model'):
+        model = KeyedVectors.load(embeddings_path + ".model")
+    if os.path.isfile(embeddings_path + '.vec'):
+        model = FastText.load_word2vec_format(embeddings_path + '.vec')
+    if model is None:
+        raise Exception("No vaild path to embeddings")
+    return model

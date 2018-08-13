@@ -1,8 +1,10 @@
 import json
 
+import nltk
 from keras_preprocessing.sequence import pad_sequences
 
 from ner.config import parameters
+from ner.treebank_span import TreebankSpanTokenizer
 from ner.utils import split_by_sentence_train
 
 
@@ -80,7 +82,6 @@ def create_features(tokens):
 def preprocess_training_data(word2index, model_parameters):
     with open(parameters["train_dataset_path"]) as f:
         unprocessed_data = json.load(f)["texts"]
-        unprocessed_data = unprocessed_data
     unprocessed_data_sentences = split_by_sentence_train(unprocessed_data)
     # TODO add words from train to vocab
     tokens = [[word.lower() if model_parameters["lowercase"] else word for word in doc["tokens"]] for doc in

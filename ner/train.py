@@ -6,10 +6,11 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 
 from ner.config import parameters, search_parameters
-from ner.dataset import load_word_vectors
+from ner.dataset import load_word_vectors, load_word_vectors_with_dictionary
 from ner.model import create_model
 from ner.preprocess import preprocess_training_data
 from ner.test import predict_test
+from ner.treebank_span import TreebankSpanTokenizer
 
 
 def train_and_eval(vectors, word2index, model_params):
@@ -44,13 +45,13 @@ def train_and_eval(vectors, word2index, model_params):
     test_data = predict_test(idx2label, model, word2index, model_params)
     print(values)
 
-    # serialize model to JSON
-    model_json = model.to_json()
-    with open("generated/model.json", "w") as json_file:
-        json_file.write(model_json)
-    # serialize weights to HDF5
-    model.save_weights("generated/model.h5")
-    print("Saved model to disk")
+    # # serialize model to JSON
+    # model_json = model.to_json()
+    # with open("generated/model.json", "w") as json_file:
+    #     json_file.write(model_json)
+    # # serialize weights to HDF5
+    # model.save_weights("generated/model.h5")
+    # print("Saved model to disk")
 
     return values, test_data
 
@@ -86,7 +87,28 @@ def one_hot_encode(idx_iobs, label2idx):
 
 
 if __name__ == "__main__":
-    vectors, word2index = load_word_vectors(parameters["emb_file"])
+
+    with open(parameters["train_dataset_path"]) as f:
+        unprocessed_data = json.load(f)["texts"]
+    word2index = {'PAD': 0, "UNKNOWN":1}
+    i = 1
+    for sentence in unprocessed_data:
+        for word in sentence:
+            if word not in word2index:
+                word2index[word] = i
+                i = i + 1
+    with open(parameters["test_dataset_path"]) as f:
+        test_data = json.load(f)
+    tokenizer = TreebankSpanTokenizer()
+    for doc in test_data:
+        doc['answers'] = ""
+        sentence = tokenizer.tokenize(doc["text"])
+        for word in sentence:
+            if word not in word2index:
+                word2index[word] = i
+                i = i + 1
+
+    vectors, word2index = load_word_vectors_with_dictionary(parameters["emb_file"], word2index)
     values, test_data = train_and_eval(vectors, word2index, search_parameters)
     import os
     if not os.path.exists("output"):
