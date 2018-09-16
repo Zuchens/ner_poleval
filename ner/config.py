@@ -9,7 +9,8 @@ parameters = \
     "train_dataset_path" : "data/train/out_middle.json",
     # "train_dataset_path": "data/train/out.json",
     # "train_dataset_path": "data/train/shuffled_out.json",
-    "test_dataset_path": "data/test/poleval_test_ner_2018.json",
+    # "test_dataset_path": "data/test/poleval_test_ner_2018.json",
+    "test_dataset_path": "data/test/t.json",
 
     "validation_size":0.1,
     'epochs': 10,
