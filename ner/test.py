@@ -21,6 +21,7 @@ def predict_test(idx2label, model, word2index, model_params):
         for doc in test_data:
             doc['answers'] = ""
             doc["text"] = doc["text"].replace("\"","|")
+            doc["text"] = doc["text"].replace("\n", " ")
             text = doc["text"]
             sentences = sent_tokenizer.tokenize(text)
             test_spans_sentences = list(sent_tokenizer.span_tokenize(doc["text"]))

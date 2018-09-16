@@ -6,7 +6,6 @@ from gensim.models import KeyedVectors
 from gensim.models.wrappers import FastText
 import numpy as np
 
-#SPECIAL_CHARS = ["unk", ".",",","-","?","!"]
 SPECIAL_CHARS = ["UNKNOWN"]
 
 
@@ -40,6 +39,9 @@ def load_word_vectors_with_dictionary(embeddings_path, word2index = {}):
         try:
             vectors[index, :] = model[word]
         except KeyError:
+            vectors[index, :] = np.random.rand(model.vector_size)
+            i+=1
+        except AttributeError:
             vectors[index, :] = np.random.rand(model.vector_size)
             i+=1
     print("Unknowns "+ str(i))
