@@ -13,7 +13,8 @@ def convert_entities(entities, tokens,model_parameters):
     for sentence_entities in entities:
         # TODO implement cutting sentence size
         iob = [set("P", )] * model_parameters["padding"]
-        #TODO quickfix
+        if (len(sentence_entities) >model_parameters["padding"]  ):
+            a = 1
         for idx, entity in enumerate(sentence_entities[:model_parameters["padding"]]):
             val = set(iob[idx])
             val.add("O")
@@ -50,8 +51,10 @@ def convert_entities(entities, tokens,model_parameters):
     label2idx_iterator = 0
 
     idx_iobs = []
+    from collections import defaultdict
 
-    for iob_sentence in iobs:
+    label2count = defaultdict(int)
+    for i, iob_sentence in enumerate(iobs):
         idx_iob = []
         for iob in iob_sentence:
             iob = sorted(iob)
@@ -59,8 +62,12 @@ def convert_entities(entities, tokens,model_parameters):
             if data not in label2idx:
                 label2idx[data] = label2idx_iterator
                 label2idx_iterator += 1
+
+            label2count[data]+=1
             idx_iob.append(label2idx[data])
         idx_iobs.append(idx_iob)
+
+    print(json.dumps(label2count, indent=2))
     return label2idx, idx_iobs
 
 import re
@@ -85,11 +92,11 @@ def preprocess_training_data(word2index, model_parameters):
     unprocessed_data_sentences = split_by_sentence_train(unprocessed_data)
     # TODO add words from train to vocab
     tokens = [[word.lower() if model_parameters["lowercase"] else word for word in doc["tokens"]] for doc in
-              unprocessed_data_sentences]
+              unprocessed_data]
     input = [[word2index.get(word, word2index["UNKNOWN"]) for word in doc] for doc in tokens]
     features = create_features(tokens)
     model_parameters["padding"] = max([len(doc) for doc in tokens])
-    entities = [doc["entities"] for doc in unprocessed_data_sentences]
+    entities = [doc["entities"] for doc in unprocessed_data]
     label2idx, idx_iobs = convert_entities(entities, tokens, model_parameters)
     input = pad_sequences(input, maxlen=model_parameters["padding"], padding="post", truncating="post")
     features = pad_sequences(features, maxlen=model_parameters["padding"], padding="post", truncating="post")

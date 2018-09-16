@@ -2,6 +2,7 @@ import json
 
 import numpy as np
 import keras
+from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 
@@ -45,13 +46,7 @@ def train_and_eval(vectors, word2index, model_params):
     test_data = predict_test(idx2label, model, word2index, model_params)
     print(values)
 
-    # # serialize model to JSON
-    # model_json = model.to_json()
-    # with open("generated/model.json", "w") as json_file:
-    #     json_file.write(model_json)
-    # # serialize weights to HDF5
-    # model.save_weights("generated/model.h5")
-    # print("Saved model to disk")
+    print("Saved model to disk")
 
     return values, test_data
 
@@ -75,7 +70,11 @@ def test_validation(idx2label, input_val, model, target_val, uppercase_feature_v
                         true+=1
                     all+=1
                 # print(str(input_val[sent_idx][token_idx]) + " " + index2word[] + " " +idx2label[idx])
+    print('Confusion Matrix')
+    t = np.argmax(target_val, axis=1).flatten()
+    p = np.argmax(val_predictions, axis=1).flatten()
 
+    np.savetxt('test.out', confusion_matrix(t, p), delimiter=',')
     acc = true/all if all != 0 else 0
     return values+ " Value on entitied "+  str(acc)
 

@@ -42,6 +42,9 @@ def load_word_vectors_with_dictionary(embeddings_path, word2index = {}):
         except KeyError:
             vectors[index, :] = np.random.rand(model.vector_size)
             i+=1
+        except AttributeError:
+            vectors[index, :] = np.random.rand(model.vector_size)
+            i+=1
     print("Unknowns "+ str(i))
     return vectors, word2index
 
