@@ -28,7 +28,7 @@ search_parameters = \
     'output_dim_rnn': 200,
     'activation_rnn': 'relu',
     'dropout': 0.5,
-    'trainable_embeddings': False,
+    'trainable_embeddings': True,
     'optimizer': 'adam',
     'iob': 'io',
 }

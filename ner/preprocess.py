@@ -1,8 +1,10 @@
 import json
 
+import nltk
 from keras_preprocessing.sequence import pad_sequences
 
 from ner.config import parameters
+from ner.treebank_span import TreebankSpanTokenizer
 from ner.utils import split_by_sentence_train
 
 
@@ -46,7 +48,10 @@ def convert_entities(entities, tokens,model_parameters):
     label2idx_iterator = 1
 
     idx_iobs = []
-    for iob_sentence in iobs:
+    from collections import defaultdict
+
+    label2count = defaultdict(int)
+    for i, iob_sentence in enumerate(iobs):
         idx_iob = []
         for iob in iob_sentence:
             # iob = sorted(iob)
@@ -54,8 +59,12 @@ def convert_entities(entities, tokens,model_parameters):
             if iob not in label2idx:
                 label2idx[iob] = label2idx_iterator
                 label2idx_iterator += 1
+
+            label2count[iob]+=1
             idx_iob.append(label2idx[iob])
         idx_iobs.append(idx_iob)
+
+    print(json.dumps(label2count, indent=2))
     return label2idx, idx_iobs
 
 import re
@@ -77,15 +86,16 @@ def create_features(tokens):
 def preprocess_training_data(word2index, model_parameters):
     with open(parameters["train_dataset_path"]) as f:
         unprocessed_data = json.load(f)["texts"]
-        unprocessed_data = unprocessed_data
     unprocessed_data_sentences = split_by_sentence_train(unprocessed_data)
     # TODO add words from train to vocab
+    # tokens = [[word.lower() if model_parameters["lowercase"] else word for word in doc["tokens"]] for doc in
+    #           unprocessed_data_sentences]
     tokens = [[word.lower() if model_parameters["lowercase"] else word for word in doc["tokens"]] for doc in
-              unprocessed_data_sentences]
-    input = [[word2index.get(word, word2index[parameters["unknown"]]) for word in doc] for doc in tokens]
+              unprocessed_data]
+    input = [[word2index.get(word, word2index["UNKNOWN"]) for word in doc] for doc in tokens]
     features = create_features(tokens)
     model_parameters["padding"] = max([len(doc) for doc in tokens])
-    entities = [doc["entities"] for doc in unprocessed_data_sentences]
+    entities = [doc["entities"] for doc in unprocessed_data]
     label2idx, idx_iobs = convert_entities(entities, tokens, model_parameters)
     input = pad_sequences(input, maxlen=model_parameters["padding"], padding="post", truncating="post")
     features = pad_sequences(features, maxlen=model_parameters["padding"], padding="post", truncating="post")

@@ -21,6 +21,7 @@ def predict_test(idx2label, model, word2index, model_params):
         for doc in test_data:
             doc['answers'] = ""
             doc["text"] = doc["text"].replace("\"","|")
+            doc["text"] = doc["text"].replace("\n", " ")
             text = doc["text"]
             sentences = sent_tokenizer.tokenize(text)
             test_spans_sentences = list(sent_tokenizer.span_tokenize(doc["text"]))
@@ -33,7 +34,7 @@ def predict_test(idx2label, model, word2index, model_params):
                 for t_token, t_token_span in zip(t_sent, t_span):
                     assert sent[t_token_span[0]:t_token_span[1]] == t_token
                     assert text[span[0]+t_token_span[0]:span[0]+t_token_span[1]] == t_token
-            input_test = [[word2index.get(word, word2index[parameters["unknown"]]) for word in doc] for doc in test_tokens]
+            input_test = [[word2index.get(word, word2index["UNKNOWN"]) for word in x] for x in test_tokens]
             features = create_features(test_tokens)
 
             input_test = pad_sequences(input_test, maxlen=model_params["padding"], padding="post")
