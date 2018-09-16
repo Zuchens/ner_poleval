@@ -1,12 +1,16 @@
 import json
+import os
 
-import numpy as np
 import keras
+from sklearn.metrics import confusion_matrix
+import numpy as np
+from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 
 from ner.config import parameters, search_parameters
 from ner.dataset import load_word_vectors, load_word_vectors_with_dictionary
+from ner.dataset import load_word_vectors_with_dictionary
 from ner.model import create_model
 from ner.preprocess import preprocess_training_data
 from ner.test import predict_test
@@ -14,7 +18,6 @@ from ner.treebank_span import TreebankSpanTokenizer
 
 
 def train_and_eval(vectors, word2index, model_params):
-
     idx_iobs, input, label2idx, features = preprocess_training_data(word2index, model_params)
     features = np.asarray(features)
     target = one_hot_encode(idx_iobs, label2idx)
@@ -23,8 +26,7 @@ def train_and_eval(vectors, word2index, model_params):
         input,
         features,
         target,
-        test_size=parameters["validation_size"],
-        shuffle=True)
+        test_size=parameters["validation_size"])
 
     model = create_model(vectors, emb_features=vectors.shape[1], feature_size=3, maxlen=model_params["padding"],
                          output_size=len(target_train[0][0]), model_parameters=model_params)
@@ -45,13 +47,13 @@ def train_and_eval(vectors, word2index, model_params):
     test_data = predict_test(idx2label, model, word2index, model_params)
     print(values)
 
-    # # serialize model to JSON
-    # model_json = model.to_json()
-    # with open("generated/model.json", "w") as json_file:
-    #     json_file.write(model_json)
-    # # serialize weights to HDF5
-    # model.save_weights("generated/model.h5")
-    # print("Saved model to disk")
+    # serialize model to JSON
+    model_json = model.to_json()
+    with open("generated/model.json", "w") as json_file:
+        json_file.write(model_json)
+    # serialize weights to HDF5
+    model.save_weights("generated/model.h5")
+    print("Saved model to disk")
 
     return values, test_data
 
@@ -72,12 +74,18 @@ def test_validation(idx2label, input_val, model, target_val, uppercase_feature_v
                 idx = np.argmax(val_predictions[sent_idx][token_idx])
                 if idx2label[idx] != 'O-P':
                     if np.argmax(target_val[sent_idx][token_idx]) == idx:
-                        true+=1
-                    all+=1
-                # print(str(input_val[sent_idx][token_idx]) + " " + index2word[] + " " +idx2label[idx])
+                        true += 1
+                    all += 1
+                    # print(str(input_val[sent_idx][token_idx]) + " " + index2word[] + " " +idx2label[idx])
+    print('Confusion Matrix')
+    t = np.argmax(target_val, axis=1).flatten()
+    p = np.argmax(val_predictions, axis=1).flatten()
 
-    acc = true/all if all != 0 else 0
-    return values+ " Value on entitied "+  str(acc)
+    np.savetxt('test.out', confusion_matrix(t, p), delimiter=',')
+    acc = true / all if all != 0 else 0
+    print( " Value on entitied " + str(acc))
+    return values + " Value on entitied " + str(acc)
+
 
 def one_hot_encode(idx_iobs, label2idx):
     mlb_targets = OneHotEncoder(sparse=False)
@@ -86,11 +94,23 @@ def one_hot_encode(idx_iobs, label2idx):
     return target
 
 
+def save_results():
+
+    if not os.path.exists("output"):
+        os.mkdir("output")
+    import datetime
+    dt = datetime.datetime.now()
+    with open('output/train_results-' + str(dt) + '.csv', 'w+') as f:
+        f.write('{}\t{}'.format(search_parameters, values))
+    with open('output/test_results-' + str(dt) + '.json', 'w+') as f:
+        json.dump(test_data, f, indent=2)
+
+
 if __name__ == "__main__":
 
     with open(parameters["train_dataset_path"]) as f:
         unprocessed_data = json.load(f)["texts"]
-    word2index = {'PAD': 0, "UNKNOWN":1}
+    word2index = {'PAD': 0, "UNKNOWN": 1}
     i = 1
     for sentence in unprocessed_data:
         for word in sentence:
@@ -110,12 +130,4 @@ if __name__ == "__main__":
 
     vectors, word2index = load_word_vectors_with_dictionary(parameters["emb_file"], word2index)
     values, test_data = train_and_eval(vectors, word2index, search_parameters)
-    import os
-    if not os.path.exists("output"):
-        os.mkdir("output")
-    import datetime
-    dt = datetime.datetime.now()
-    with open('output/train_results-'+str(dt)+'.csv', 'w+') as f:
-        f.write('{}\t{}'.format(search_parameters, values))
-    with open('output/test_results-'+str(dt)+'.json', 'w+') as f:
-        json.dump(test_data, f, indent=2)
+    save_results()

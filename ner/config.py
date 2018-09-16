@@ -20,10 +20,10 @@ parameters = \
 
 search_parameters = \
 {
-    "padding": 100,
+    "padding": 150,
     "lowercase": False,
     'rnn': GRU,
-    'output_dim_rnn': 200,
+    'output_dim_rnn': 400,
     'activation_rnn': 'relu',
     'dropout': 0.5,
     'trainable_embeddings': True,
