@@ -29,6 +29,6 @@ search_parameters = \
     'activation_rnn': 'relu',
     'dropout': 0.5,
     'trainable_embeddings': True,
-    'optimizer': 'adam',
+    'optimizer': 'sgd',
     'iob': 'io',
 }
