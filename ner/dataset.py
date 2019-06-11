@@ -1,54 +1,31 @@
 import os
 
-import os
-
 from gensim.models import KeyedVectors
 from gensim.models.wrappers import FastText
 import numpy as np
 
-#SPECIAL_CHARS = ["unk", ".",",","-","?","!"]
-SPECIAL_CHARS = ["UNKNOWN"]
+from ner.vocab import create_vocab
 
 
-def load_word_vectors(embeddings_path):
-    model = load_emb(embeddings_path)
-    index2word = model.index2word
-    word2index = {}
-    vectors = np.zeros((len(index2word) + len(SPECIAL_CHARS) + 1, model.vector_size))
-    for index, word in enumerate(index2word):
-        word2index[word] = index + 1
-        vectors[index + 1, :] = model[word]
-
-    for idx, word in enumerate(SPECIAL_CHARS):
-        assert word not in index2word
-        index2word.append(word)
-        word2index[word] = index + idx + 2
-        vectors[word2index[word], :] = np.random.rand(model.vector_size)
-
-    index2word.append("pad")
-    word2index["pad"] = 0
-    vectors[0, :] = np.zeros(model.vector_size)
-    return vectors, word2index
-
-def load_word_vectors_with_dictionary(embeddings_path, word2index = {}):
-    model = load_emb(embeddings_path)
+def load_embeddings(embeddings_path):
+    # Creating vocab from train and test file
+    word2index = create_vocab()
+    model = load_embedding_file(embeddings_path)
     vectors = np.zeros((len(word2index), model.vector_size))
     i = 0
     for index, word in enumerate(word2index):
-        if word == "PAD":
-            vectors[index, :] = np.zeros(model.vector_size)
         try:
             vectors[index, :] = model[word]
-        except KeyError:
+        except KeyError:  # word not in embedding file
             vectors[index, :] = np.random.rand(model.vector_size)
-            i+=1
+            i += 1
         except AttributeError:
             vectors[index, :] = np.random.rand(model.vector_size)
-            i+=1
-    print("Unknowns "+ str(i))
+            i += 1
     return vectors, word2index
 
-def load_emb(embeddings_path):
+
+def load_embedding_file(embeddings_path):
     model = None
     if os.path.isfile(embeddings_path + '.model'):
         model = KeyedVectors.load(embeddings_path + ".model")

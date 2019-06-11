@@ -3,7 +3,7 @@ from sklearn.model_selection import ParameterGrid
 
 from ner.config import parameters
 from ner.dataset import load_word_vectors
-from ner.train import train_and_eval
+from ner.main import train_and_eval
 
 
 def grid_search():

@@ -6,7 +6,6 @@ class TreebankSpanTokenizer(TreebankWordTokenizer):
     def __init__(self):
         self._word_tokenizer = TreebankWordTokenizer()
 
-
     def span_tokenize(self, text):
         ix = 0
         for word_token in self.tokenize(text):

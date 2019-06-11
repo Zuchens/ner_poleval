@@ -3,9 +3,9 @@ from keras.layers import GRU
 parameters = \
 {
     "use_test_file" : True,
-    "emb_file" : "data/emb/waw/w2v_allwiki_nkjp300_50",
-    # emb_file" : "/home/ubuntu/ner_poleval/data/emb/wiki.pl"
-    # "emb_file" : "data/emb/fasttext/wiki.pl",
+    "emb_path" : "data/emb/waw/w2v_allwiki_nkjp300_50",
+    # emb_path" : "/home/ubuntu/ner_poleval/data/emb/wiki.pl"
+    # "emb_path" : "data/emb/fasttext/wiki.pl",
     "train_dataset_path" : "data/train/out_middle.json",
     # "train_dataset_path": "data/train/out.json",
     # "train_dataset_path": "data/train/shuffled_out.json",
@@ -29,6 +29,7 @@ search_parameters = \
     'activation_rnn': 'relu',
     'dropout': 0.5,
     'trainable_embeddings': True,
-    'optimizer': 'sgd',
+    'optimizer': 'adam',
     'iob': 'io',
+    'is_crf' : False
 }
