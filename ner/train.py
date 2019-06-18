@@ -1,4 +1,5 @@
 import numpy as np
+from keras_preprocessing.sequence import pad_sequences
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
@@ -10,9 +11,15 @@ from ner.test import predict_test
 
 
 def train_and_eval(vectors, word2index, model_params):
-    idx_iobs, input, label2idx, features = preprocess_training_data(word2index, model_params)
+    categories, input, label2idx, features = preprocess_training_data(word2index, model_params)
+
+    input = pad_sequences(input, maxlen=model_params["padding"], padding="post", truncating="post")
+
+    features = pad_sequences(features, maxlen=model_params["padding"], padding="post", truncating="post")
     features = np.asarray(features)
-    target = one_hot_encode(idx_iobs, label2idx)
+
+    categories = pad_sequences(categories, maxlen=model_params["padding"], padding="post", truncating="post")
+    target = one_hot_encode(categories, label2idx)
 
     embeddings_train, embeddings_val, features_train, features_val, target_train, target_val = train_test_split(
         input,
@@ -58,7 +65,7 @@ def test_validation(idx2label, input_val, model, target_val, uppercase_feature_v
                 break
             if 0 != input_val[sent_idx][token_idx]:
                 idx = np.argmax(val_predictions[sent_idx][token_idx])
-                if idx2label[idx] != 'O' and idx2label[idx] != 'P':
+                if  idx != 0:
                     if np.argmax(target_val[sent_idx][token_idx]) == idx:
                         true += 1
                     all += 1
@@ -72,8 +79,8 @@ def test_validation(idx2label, input_val, model, target_val, uppercase_feature_v
     return values + " Value on entitied " + str(acc)
 
 
-def one_hot_encode(idx_iobs, label2idx):
-    mlb_targets = OneHotEncoder(sparse=False)
-    mlb_targets.fit([[x] for x in label2idx.values()])
-    target = [mlb_targets.transform([[i] for i in x]) for x in idx_iobs]
+def one_hot_encode(categories, label2idx):
+    one_hot_categories = OneHotEncoder(sparse=False)
+    one_hot_categories.fit([[x] for x in label2idx.values()])
+    target = [one_hot_categories.transform([[i] for i in x]) for x in categories]
     return target

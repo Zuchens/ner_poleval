@@ -31,22 +31,22 @@ class SentimentTrainer(object):
         indices = torch.randperm(len(dataset))
         for idx in tqdm(range(len(dataset)),desc='Training epoch '+str(self.epoch+1)+''):
             tree, sent, label = dataset[indices[idx]]
-            input = Var(sent)
-            target = Var(torch.LongTensor([int(label)]))
-            if self.args.cuda:
+            input = Var(torch.LongTensor(sent))
+            target = Var(torch.LongTensor([tree.gold_label]))
+            if self.args['cuda']:
                 input = input.cuda()
                 target = target.cuda()
             emb = F.torch.unsqueeze(self.embedding_model(input), 1)
             output, err, _, _ = self.model.forward(tree, emb, training=True)
             #params = self.model.childsumtreelstm.getParameters()
             # params_norm = params.norm()
-            err = err/self.args.batchsize # + 0.5*self.args.reg*params_norm*params_norm # custom bias
+            err = err/self.args['batchsize'] # + 0.5*self.args.reg*params_norm*params_norm # custom bias
             loss += err.data[0] #
             err.backward()
             k += 1
-            if k==self.args.batchsize:
+            if k==self.args['batchsize']:
                 for f in self.embedding_model.parameters():
-                    f.data.sub_(f.grad.data * self.args.emblr)
+                    f.data.sub_(f.grad.data * self.args['emblr'])
                 self.optimizer.step()
                 self.embedding_model.zero_grad()
                 self.optimizer.zero_grad()
@@ -65,9 +65,9 @@ class SentimentTrainer(object):
         outputs = []
         for idx in tqdm(range(len(dataset)), desc='Testing epoch  '+str(self.epoch)+''):
             tree, sent, label = dataset[idx]
-            input = Var(sent, volatile=True)
+            input = torch.LongTensor(sent)
             target = Var(torch.LongTensor([int(label)]), volatile=True)
-            if self.args.cuda:
+            if self.args['cuda']:
                 input = input.cuda()
                 target = target.cuda()
             emb = F.torch.unsqueeze(self.embedding_model(input),1)
@@ -86,7 +86,7 @@ class SentimentTrainer(object):
         output_trees = []
         for idx in tqdm(range(len(dataset)), desc='Predcting results'):
             tree, sent, _ = dataset[idx]
-            input = Var(sent, volatile=True)
+            input = torch.LongTensor(sent)
             emb = F.torch.unsqueeze(self.embedding_model(input), 1)
             output, _, acc, tree = self.model(tree, emb)
             output_trees.append(tree)

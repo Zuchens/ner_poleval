@@ -4,13 +4,14 @@ parameters = \
 {
     "use_test_file" : True,
     "emb_path" : "data/emb/waw/w2v_allwiki_nkjp300_50",
-    # emb_path" : "/home/ubuntu/ner_poleval/data/emb/wiki.pl"
+    # emb_path" : "/home/ubuntu/ner_poleval/data/emb/wiki.pl",
     # "emb_path" : "data/emb/fasttext/wiki.pl",
+    # "train_dataset_path" : "data/train/out_small.json",
     "train_dataset_path" : "data/train/out_middle.json",
     # "train_dataset_path": "data/train/out.json",
     # "train_dataset_path": "data/train/shuffled_out.json",
-    # "test_dataset_path": "data/test/poleval_test_ner_2018.json",
-    "test_dataset_path": "data/test/t.json",
+    "test_dataset_path": "data/test/poleval_test_ner_2018.json",
+    # "test_dataset_path": "data/test/t.json",
 
     "validation_size":0.1,
     'epochs': 10,

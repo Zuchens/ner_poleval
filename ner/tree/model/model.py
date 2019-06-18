@@ -5,17 +5,16 @@ from torch.autograd import Variable as Var
 
 from ner.tree.model.zoneout import zoneout
 
-
 class ChildSumTreeLSTM(nn.Module):
     def __init__(self, args, criterion, output_module):
         super(ChildSumTreeLSTM, self).__init__()
-        self.cuda_flag = args.cuda
-        self.in_dim = args.input_dim
-        self.mem_dim = args.mem_dim
-        self.recurrent_dropout_c = args.recurrent_dropout_c
-        self.recurrent_dropout_h = args.recurrent_dropout_h
-        self.commons_mask = args.common_mask
-        self.zoneout_choose_child = args.zoneout_choose_child
+        self.cuda_flag = args['cuda']
+        self.in_dim = args['input_dim']
+        self.mem_dim = args['mem_dim']
+        self.recurrent_dropout_c = args['recurrent_dropout_c']
+        self.recurrent_dropout_h = args['recurrent_dropout_h']
+        self.commons_mask = args['common_mask']
+        self.zoneout_choose_child = args['zoneout_choose_child']
 
         self.ix = nn.Linear(self.in_dim, self.mem_dim)
         self.ih = nn.Linear(self.mem_dim, self.mem_dim)
@@ -90,7 +89,7 @@ class ChildSumTreeLSTM(nn.Module):
         tree.output_softmax = output_softmax
         tree.output = output
         if training and tree.gold_label is not None:
-            target = Var(torch.LongTensor([tree.gold_label]))
+            target = Var(torch.LongTensor([0]))
             if self.cuda_flag:
                 target = target.cuda()
             loss = loss + self.criterion(output, target)
@@ -116,9 +115,9 @@ class ChildSumTreeLSTM(nn.Module):
 class SentimentModule(nn.Module):
     def __init__(self, args, dropout=0.5):
         super(SentimentModule, self).__init__()
-        self.cuda_flag = args.cuda
-        self.mem_dim = args.mem_dim
-        self.num_classes = args.num_classes
+        self.cuda_flag = args['cuda']
+        self.mem_dim = args['mem_dim']
+        self.num_classes = args['num_classes']
 
         self.dropout = dropout
         self.linear_layer = nn.Linear(self.mem_dim, self.num_classes)
@@ -138,13 +137,12 @@ class SentimentModule(nn.Module):
 
 
 class TreeLSTMSentiment(nn.Module):
-    def __init__(self, args, criterion, embeddings, vocab):
+    def __init__(self, args, criterion, embeddings):
         super(TreeLSTMSentiment, self).__init__()
         self.output_module = SentimentModule(args, dropout=0.5)
         self.tree_module = ChildSumTreeLSTM(args, criterion,
                                             output_module=self.output_module)
         self.embeddings = embeddings
-        self.vocab = vocab
 
     def forward(self, tree, inputs, training=False):
         _, loss = self.tree_module(tree, inputs, training)

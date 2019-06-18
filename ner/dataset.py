@@ -1,8 +1,8 @@
 import os
 
+import numpy as np
 from gensim.models import KeyedVectors
 from gensim.models.wrappers import FastText
-import numpy as np
 
 from ner.vocab import create_vocab
 
@@ -34,3 +34,4 @@ def load_embedding_file(embeddings_path):
     if model is None:
         raise Exception("No vaild path to embeddings")
     return model
+

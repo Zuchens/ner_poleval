@@ -3,6 +3,7 @@ import json
 from ner.config import parameters, search_parameters
 from ner.dataset import load_embeddings
 from ner.train import train_and_eval
+from ner.tree.prepare import train_tree
 
 
 def write_output(values, test_data, search_parameters):
@@ -19,5 +20,6 @@ def write_output(values, test_data, search_parameters):
 
 if __name__ == "__main__":
     vectors, vocabulary = load_embeddings(parameters["emb_path"])
+    train_tree(vectors, vocabulary, search_parameters)
     values, test_data = train_and_eval(vectors, vocabulary, search_parameters)
     write_output(values, test_data, search_parameters)
