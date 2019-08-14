@@ -50,7 +50,7 @@ def train_tree(vectors, word2index, model_params):
     tree_config['num_classes'] = len(label2idx)
     dev_dataset = SSTDataset(word2index, len(label2idx))
     train_dataset, dev_dataset = split_dataset_random(target, sentences, trees, train_dataset,dev_dataset)
-    max_dev_epoch, max_dev_acc, max_model_filename = train(train_dataset, dev_dataset, embedding_model, config.tree_config)
+    max_dev_epoch, max_dev_acc = train(train_dataset, dev_dataset, embedding_model, config.tree_config)
 
 
 def split_dataset_random(target, sentences, trees, train_dataset,dev_dataset, test_size=0.1 ):

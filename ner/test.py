@@ -14,8 +14,6 @@ def predict_test(idx2label, model, word2index, model_params):
     if parameters["use_test_file"]:
         with open(parameters["test_dataset_path"]) as f:
             test_data = json.load(f)
-
-        #TODO check if python spans are alright
         tokenizer = TreebankSpanTokenizer()
         sent_tokenizer = nltk.PunktSentenceTokenizer()
         for doc in test_data:

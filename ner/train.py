@@ -1,5 +1,6 @@
 import numpy as np
 from keras_preprocessing.sequence import pad_sequences
+from sklearn.feature_extraction import DictVectorizer
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
@@ -10,13 +11,17 @@ from ner.simple.model import create_model
 from ner.test import predict_test
 
 
-def train_and_eval(vectors, word2index, model_params):
-    categories, input, label2idx, features = preprocess_training_data(word2index, model_params)
-
+def train_and_eval(categories, input, label2idx, features, dependencies, dependencyLabels, model_params, vectors, vocabulary):
     input = pad_sequences(input, maxlen=model_params["padding"], padding="post", truncating="post")
 
-    features = pad_sequences(features, maxlen=model_params["padding"], padding="post", truncating="post")
-    features = np.asarray(features)
+    features = np.array(pad_sequences(features, maxlen=model_params["padding"], padding="post", truncating="post"))
+    dependencies = np.reshape(np.array(pad_sequences(dependencies, maxlen=model_params["padding"], padding="post", truncating="post")), (features.shape[0], features.shape[1], 1))
+
+    dependencyLabelsArray = np.array(pad_sequences(dependencyLabels[0], maxlen=model_params["padding"], padding="post", truncating="post"))
+    dependencyLabelsArray = one_hot_encode(dependencyLabelsArray, dependencyLabels[1])
+
+
+    features = np.concatenate((features,dependencies, dependencyLabelsArray), axis=2)
 
     categories = pad_sequences(categories, maxlen=model_params["padding"], padding="post", truncating="post")
     target = one_hot_encode(categories, label2idx)
@@ -32,15 +37,15 @@ def train_and_eval(vectors, word2index, model_params):
     model, train_accuracy = train(embeddings_train, model_params, target_train, features_train, vectors)
     values = 'Accuracy train: %f\n' % (train_accuracy * 100)
 
-    values += test_validation(idx2label, embeddings_val, model, target_val, features_val, word2index, model_params)
+    values += test_validation(idx2label, embeddings_val, model, target_val, features_val, vocabulary, model_params)
 
-    test_data = predict_test(idx2label, model, word2index, model_params)
+    test_data = predict_test(idx2label, model, vocabulary, model_params)
     print(values)
     return values, test_data
 
 
 def train(input_train, model_params, target_train, uppercase_feature_train, vectors):
-    model = create_model(vectors, emb_features=vectors.shape[1], feature_size=3, maxlen=model_params["padding"],
+    model = create_model(vectors, emb_features=vectors.shape[1], feature_size=uppercase_feature_train.shape[2], maxlen=model_params["padding"],
                          output_size=len(target_train[0][0]), model_parameters=model_params)
     model.fit([np.asarray(input_train), np.asarray(uppercase_feature_train)], np.asarray(target_train), batch_size=16,
               nb_epoch=parameters["epochs"],
@@ -51,8 +56,8 @@ def train(input_train, model_params, target_train, uppercase_feature_train, vect
     return model, train_accuracy
 
 
-def test_validation(idx2label, input_val, model, target_val, uppercase_feature_val, word2index, model_params):
-    index2word = dict((v, k) for k, v in word2index.items())
+def test_validation(idx2label, input_val, model, target_val, uppercase_feature_val, vocabulary, model_params):
+    index2word = dict((v, k) for k, v in vocabulary.items())
     loss, val_accuracy = model.evaluate([np.asarray(input_val), np.asarray(uppercase_feature_val)],
                                         np.asarray(target_val), verbose=2)
     values = 'Accuracy val: %f \n' % (val_accuracy * 100)

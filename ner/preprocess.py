@@ -38,9 +38,11 @@ def convert_entities(token_categories, model_parameters):
 
 def get_categories(token_categories):
     categories = []
-    for sentence_entities in token_categories:
+    for a, sentence_entities in enumerate(token_categories):
         sentence_categories = []
         for idx, token_categories in enumerate(sentence_entities):
+            if len(sentence_categories) == len(sentence_entities):
+                break
             if token_categories:
                 for label in token_categories:
                     if label.get("subtype"):
@@ -59,6 +61,7 @@ def get_categories(token_categories):
             else:
                 category = set("O")
                 sentence_categories.append(category)
+
         categories.append(sentence_categories)
     return categories
 
@@ -83,15 +86,56 @@ def create_features(tokens):
 def preprocess_training_data(word2index, model_parameters):
     with open(parameters["train_dataset_path"]) as f:
         unprocessed_data = json.load(f)["texts"]
-    # unprocessed_data_sentences = split_by_sentence_train(unprocessed_data)
-    # TODO add words from train to vocab
-    words = [[word.lower() if model_parameters["lowercase"] else word for word in doc["tokens"]] for doc in
-             unprocessed_data]
+    unprocessed_data = [x for x in unprocessed_data if x["tokens"]]
+    words = []
+    dependencies = []
+    dependencyLabels = []
+    dependencyLabel2idx = {}
+    dependencyLabelIterator = 1
+    for doc in unprocessed_data:
+        word_idx = 0
+        for sentDep, sentDepLabel in zip(doc["dependencies"], doc["dependencyLabels"]):
+            xwords = []
+            xdependencies = []
+            xdependencyLabels = []
+            for dep, label in zip(sentDep, sentDepLabel):
+                if label not in dependencyLabel2idx.keys():
+                    dependencyLabel2idx[label] = dependencyLabelIterator
+                    dependencyLabelIterator+=1
+                xdependencies.append(dep)
+                xdependencyLabels.append(label)
+                if model_parameters["lowercase"]:
+                    word = doc["tokens"][word_idx].lower()
+                else:
+                    word = doc["tokens"][word_idx]
+                word_idx+=1
+                xwords.append(word)
+            dependencies.append(xdependencies)
+            dependencyLabels.append(xdependencyLabels)
+            words.append(xwords)
+
+    dependencyLabels = [[dependencyLabel2idx[label] for label in doc] for doc in dependencyLabels]
     embedding_indices = [[word2index.get(word, word2index["UNKNOWN"]) for word in doc] for doc in words]
     features = create_features(words)
     model_parameters["padding"] = max([len(doc) for doc in words])
-    # model_parameters["padding"] = max([len(doc["tokens"]) for doc in unprocessed_data])
 
     entities = [doc["entities"] for doc in unprocessed_data]
     label2idx, idx_iobs = convert_entities(entities, model_parameters)
-    return idx_iobs, embedding_indices, label2idx, features
+    new_idx_iobs =[]
+    i_iob = 0
+    idx = 0
+    for w in words:
+        print("words: " +str(len(w)))
+        xnew_idx_iobs = []
+        for _ in w:
+            val = idx_iobs[i_iob][idx]
+            xnew_idx_iobs.append(val)
+            idx+=1
+        print(xnew_idx_iobs)
+        print(w)
+        new_idx_iobs.append(xnew_idx_iobs)
+        if idx == len(idx_iobs[i_iob]) :
+            print("iobs: " + str(len(idx_iobs[i_iob])))
+            i_iob+=1
+            idx = 0
+    return new_idx_iobs, embedding_indices, label2idx, features, dependencies, (dependencyLabels,dependencyLabel2idx)
