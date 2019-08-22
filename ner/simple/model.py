@@ -27,6 +27,6 @@ def create_model(embeddings, emb_features, feature_size, maxlen, output_size, mo
         out = Dense(output_size, activation='sigmoid')(dropout)
         model = Model(inputs=[emb_input, features], outputs=[out])
         model.compile(optimizer=model_parameters['optimizer'], loss='binary_crossentropy', metrics=['acc'])
-    from keras.utils import plot_model
-    plot_model(model, to_file='model.png', show_shapes=True)
+    # from keras.utils import plot_model
+    # plot_model(model, to_file='model.png', show_shapes=True)
     return model

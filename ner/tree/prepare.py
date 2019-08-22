@@ -23,40 +23,38 @@ def prepare_embeddings(vectors, word2index):
         torch_vectors = torch_vectors.cuda()
     # plug these into embedding matrix inside model
     embedding_model.state_dict()['weight'].copy_(torch_vectors)
-    return  embedding_model
+    return embedding_model
 
 
-def trees_mockup(input, output):
+def trees_mockup(input, relations, parents, output):
     ans = []
-    for x,y in zip(input,output):
+    for x, y, par, rel in zip(input, output, parents, relations[0]):
         data = {}
-        parents = list(range(len(x)))
-        shuffle(parents)
-        data['parents'] = parents
-        data['labels'] =  deepcopy(y)
+        data['parents'] = [int(x)  if int(x) > 0 else 0 for x in par]
+        data['labels'] = deepcopy(y)
         data['tokens'] = deepcopy(x)
-        data['relations'] = ['comp'] * len(x)
+        data['relations'] = deepcopy(rel)
         ans.append(data)
     return ans
 
 
-def train_tree(vectors, word2index, model_params):
-
-    target, sentences, label2idx, features = preprocess_training_data(word2index, model_params)
-    trees = trees_mockup(sentences,target)
-    #TODO add features later
-    embedding_model = prepare_embeddings(vectors, word2index)
-    train_dataset = SSTDataset(word2index, len(label2idx))
+def train_tree(categories, input, label2idx, features, dependencies, dependencyLabels, search_parameters, vectors,
+               vocabulary):
+    trees = trees_mockup(input, dependencyLabels, dependencies, categories)
+    # TODO add features later
+    embedding_model = prepare_embeddings(vectors, vocabulary)
+    train_dataset = SSTDataset(vocabulary, len(label2idx))
     tree_config['num_classes'] = len(label2idx)
-    dev_dataset = SSTDataset(word2index, len(label2idx))
-    train_dataset, dev_dataset = split_dataset_random(target, sentences, trees, train_dataset,dev_dataset)
+    dev_dataset = SSTDataset(vocabulary, len(label2idx))
+    train_dataset, dev_dataset = split_dataset_random(categories, input, trees, train_dataset, dev_dataset)
     max_dev_epoch, max_dev_acc = train(train_dataset, dev_dataset, embedding_model, config.tree_config)
 
 
-def split_dataset_random(target, sentences, trees, train_dataset,dev_dataset, test_size=0.1 ):
-    X_train, X_dev, y_train, y_dev = train_test_split([{'trees':x, 'sentence':y} for x, y in zip(trees, sentences)], target, test_size=test_size, random_state=0)
+def split_dataset_random(target, sentences, trees, train_dataset, dev_dataset, test_size=0.1):
+    X_train, X_dev, y_train, y_dev = train_test_split([{'trees': x, 'sentence': y} for x, y in zip(trees, sentences)],
+                                                      target, test_size=test_size, random_state=0)
 
-    train_dataset.create_trees( [x['trees'] for x in X_train])
+    train_dataset.create_trees([x['trees'] for x in X_train])
     dev_dataset.create_trees([x['trees'] for x in X_dev])
     train_dataset.sentences, dev_dataset.sentences = [x['sentence'] for x in X_train], [x['sentence'] for x in X_dev]
 

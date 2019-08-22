@@ -11,7 +11,7 @@ class TreebankSpanTokenizer(TreebankWordTokenizer):
         for word_token in self.tokenize(text):
             ix = text.find(word_token, ix)
             end = ix + len(word_token)
-            yield ix, end
+            yield ix, end, word_token
             ix = end
 
     def tokenize(self, text):

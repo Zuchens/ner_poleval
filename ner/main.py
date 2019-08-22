@@ -3,6 +3,7 @@ import json
 from ner.config import parameters, search_parameters
 from ner.dataset import load_embeddings
 from ner.preprocess import preprocess_training_data
+from ner.test import predict_test
 from ner.train import train_and_eval
 from ner.tree.prepare import train_tree
 
@@ -20,13 +21,14 @@ def write_output(values, test_data, search_parameters):
 
 
 if __name__ == "__main__":
-    # with open("/home/p.zak2/PycharmProjects/ner_poleval/data/train/out2.json") as f:
-    #     data = json.load(f)
-    # with open("/home/p.zak2/PycharmProjects/ner_poleval/data/train/out-small-2.json", "w") as f:
-    #     json.dump({"texts":data["texts"][:100]},f)
     vectors, vocabulary = load_embeddings(parameters["emb_path"])
-    # train_tree(vectors, vocabulary, search_parameters)
+    categories, input, label2idx, features, dependencies, dependencyLabels = preprocess_training_data(vocabulary, search_parameters, "train_dataset_path")
+    categories, input, label2idx, features, dependencies, dependencyLabels = preprocess_training_data(vocabulary,
+                                                                                                      search_parameters,
+                                                                                                      "test_dataset_path",label2idx,dependencyLabels[1]  )
+
+    # train_tree(categories, input, label2idx, features, dependencies, dependencyLabels, search_parameters, vectors, vocabulary)
     if search_parameters["type"] == "simple":
-        categories, input, label2idx, features, dependencies, dependencyLabels = preprocess_training_data(vocabulary, search_parameters)
-        values, test_data = train_and_eval(categories, input, label2idx, features, dependencies, dependencyLabels, search_parameters, vectors, vocabulary)
-        write_output(values, test_data, search_parameters)
+        values, model, idx2label = train_and_eval(categories, input, label2idx, features, dependencies, dependencyLabels, search_parameters, vectors, vocabulary)
+        test_data = predict_test(idx2label, model, vocabulary, search_parameters)
+        write_output(values, "", search_parameters)

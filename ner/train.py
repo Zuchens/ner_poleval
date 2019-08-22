@@ -39,9 +39,7 @@ def train_and_eval(categories, input, label2idx, features, dependencies, depende
 
     values += test_validation(idx2label, embeddings_val, model, target_val, features_val, vocabulary, model_params)
 
-    test_data = predict_test(idx2label, model, vocabulary, model_params)
-    print(values)
-    return values, test_data
+    return values, model, idx2label
 
 
 def train(input_train, model_params, target_train, uppercase_feature_train, vectors):
@@ -70,10 +68,11 @@ def test_validation(idx2label, input_val, model, target_val, uppercase_feature_v
                 break
             if 0 != input_val[sent_idx][token_idx]:
                 idx = np.argmax(val_predictions[sent_idx][token_idx])
-                if  idx != 0:
+                if  idx != 0 and idx != 1:
                     if np.argmax(target_val[sent_idx][token_idx]) == idx:
                         true += 1
                     all += 1
+
                 # print(str(input_val[sent_idx][token_idx]) + " " + index2word[] + " " +idx2label[idx])
     print('Confusion Matrix')
     t = np.argmax(target_val, axis=1).flatten()

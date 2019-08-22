@@ -10,14 +10,15 @@ from ner.treebank_span import TreebankSpanTokenizer
 from ner.utils import split_by_sentence_train
 
 
-def predict_test(idx2label, model, word2index, model_params):
+def predict_test(label2idx, model, word2index, model_params):
     if parameters["use_test_file"]:
         with open(parameters["test_dataset_path"]) as f:
             test_data = json.load(f)
+
+        # prepare_data(categories, dependencies, dependencyLabels, features, input, label2idx, model_params)
         tokenizer = TreebankSpanTokenizer()
         sent_tokenizer = nltk.PunktSentenceTokenizer()
-        for doc in test_data:
-            doc['answers'] = ""
+        for doc in test_data["texts"]:
             doc["text"] = doc["text"].replace("\"","|")
             doc["text"] = doc["text"].replace("\n", " ")
             text = doc["text"]
