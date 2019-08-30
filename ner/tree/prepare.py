@@ -8,6 +8,7 @@ from ner.preprocess import preprocess_training_data
 from ner.tree import config
 from ner.tree.config import tree_config
 from ner.tree.data.dataset import SSTDataset
+from ner.tree.model.sentiment_trainer import SentimentTrainer
 from ner.tree.model.training import train
 
 
@@ -21,7 +22,6 @@ def prepare_embeddings(vectors, word2index):
 
     if config.tree_config["cuda"]:
         torch_vectors = torch_vectors.cuda()
-    # plug these into embedding matrix inside model
     embedding_model.state_dict()['weight'].copy_(torch_vectors)
     return embedding_model
 
@@ -38,16 +38,30 @@ def trees_mockup(input, relations, parents, output):
     return ans
 
 
+def test_tree(model, categories, input, label2idx, features, dependencies, dependencyLabels, search_parameters):
+    trees = trees_mockup(input, dependencyLabels, dependencies, categories)
+    # TODO add features later
+    test_dataset = SSTDataset(num_classes= len(label2idx))
+    test_dataset.create_trees(trees)
+    test_dataset.sentences = input
+    trainer = SentimentTrainer(config.tree_config, model, criterion=torch.nn.NLLLoss(), optimizer=None)
+    loss, accuracies, outputs, output_trees = trainer.test(test_dataset)
+    test_acc = torch.mean(accuracies)
+    print("Test acc  "+ str(test_acc))
+    # max_dev_epoch, max_dev_acc, model = model.predict(test_dataset)
+
 def train_tree(categories, input, label2idx, features, dependencies, dependencyLabels, search_parameters, vectors,
                vocabulary):
     trees = trees_mockup(input, dependencyLabels, dependencies, categories)
     # TODO add features later
     embedding_model = prepare_embeddings(vectors, vocabulary)
-    train_dataset = SSTDataset(vocabulary, len(label2idx))
+    train_dataset = SSTDataset(num_classes= len(label2idx))
     tree_config['num_classes'] = len(label2idx)
-    dev_dataset = SSTDataset(vocabulary, len(label2idx))
+    dev_dataset = SSTDataset(len(label2idx))
     train_dataset, dev_dataset = split_dataset_random(categories, input, trees, train_dataset, dev_dataset)
-    max_dev_epoch, max_dev_acc = train(train_dataset, dev_dataset, embedding_model, config.tree_config)
+    max_dev_epoch, max_dev_acc, model = train(train_dataset, dev_dataset, embedding_model, config.tree_config)
+    return max_dev_epoch, max_dev_acc, model
+
 
 
 def split_dataset_random(target, sentences, trees, train_dataset, dev_dataset, test_size=0.1):

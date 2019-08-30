@@ -64,6 +64,6 @@ def train(train_dataset, dev_dataset, embedding_model, args):
         gc.collect()
     print('epoch ' + str(max_dev_epoch) + ' dev score of ' + str(max_dev))
 
-    return max_dev_epoch, max_dev#, max_model_filename
+    return max_dev_epoch, max_dev, model
 
 

@@ -1,5 +1,5 @@
 from keras import Input, Model, optimizers
-from keras.layers import Flatten, Bidirectional, Concatenate, Reshape, GRU
+from keras.layers import Flatten, Bidirectional, Concatenate, Reshape, GRU, TimeDistributed
 from keras.layers.core import Dense, Dropout
 from keras.layers.embeddings import Embedding
 from keras_contrib.layers import CRF
@@ -19,14 +19,15 @@ def create_model(embeddings, emb_features, feature_size, maxlen, output_size, mo
                                 activation=model_parameters['activation_rnn'], return_sequences=True))(
         concat)
     dropout = Dropout(model_parameters['dropout'])(lstm)
+    timeDistributed = TimeDistributed(Dense(output_size, activation="relu"))(dropout)
     if model_parameters['is_crf']:
-        crf = CRF(output_size, sparse_target=True)(dropout)
+        crf = CRF(output_size, sparse_target=False)(timeDistributed)
         model = Model(inputs=[emb_input, features], outputs=[crf])
         model.compile('adam', loss=crf_loss, metrics=[crf_viterbi_accuracy])
     else:
-        out = Dense(output_size, activation='sigmoid')(dropout)
-        model = Model(inputs=[emb_input, features], outputs=[out])
-        model.compile(optimizer=model_parameters['optimizer'], loss='binary_crossentropy', metrics=['acc'])
+        # out = Dense(output_size, activation='softmax')(dropout)
+        model = Model(inputs=[emb_input, features], outputs=[timeDistributed])
+        model.compile(optimizer=model_parameters['optimizer'], loss='categorical_crossentropy', metrics=['acc'])
     # from keras.utils import plot_model
     # plot_model(model, to_file='model.png', show_shapes=True)
     return model

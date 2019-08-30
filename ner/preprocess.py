@@ -83,7 +83,8 @@ def create_features(tokens):
 
 def preprocess_training_data(word2index, model_parameters, name, label2idx=None, depLabel=None):
     with open(parameters[name]) as f:
-        unprocessed_data = json.load(f)["texts"]
+        #TODO remove cutting
+        unprocessed_data = json.load(f)["texts"][:100]
     unprocessed_data = [x for x in unprocessed_data if x["tokens"]]
     words = []
     dependencies = []
@@ -119,7 +120,8 @@ def preprocess_training_data(word2index, model_parameters, name, label2idx=None,
     dependencyLabels = [[dependencyLabel2idx[label] for label in doc] for doc in dependencyLabels]
     embedding_indices = [[word2index.get(word, word2index["UNKNOWN"]) for word in doc] for doc in words]
     features = create_features(words)
-    model_parameters["padding"] = max([len(doc) for doc in words])
+    if label2idx == None:
+        model_parameters["padding"] = max([len(doc) for doc in words])
 
     entities = [doc["entities"] for doc in unprocessed_data]
 

@@ -17,7 +17,7 @@ class SSTDataset(data.Dataset):
 
     def __init__(self, vocab=None, num_classes=None, ):
         super(SSTDataset, self).__init__()
-        self.vocab = vocab
+        # self.vocab = vocab
         self.num_classes = num_classes
         self.sentences = []
         self.labels = []
@@ -71,8 +71,8 @@ class SSTDataset(data.Dataset):
         return sentences
 
     def read_sentence(self, line):
-        indices = self.vocab.convert_to_idx(line.split(), constants.UNK_WORD)
-        return torch.LongTensor(indices)
+        # indices = self.vocab.convert_to_idx(line.split(), constants.UNK_WORD)
+        return torch.LongTensor(line)
 
     def read_trees(self, parents_data, labels_data, tokens_data, relations_data):
         if labels_data:
