@@ -2,9 +2,9 @@ import os
 
 import numpy as np
 
-
 from gensim.models import FastText, KeyedVectors
 
+from ner.dataset.vocab import Vocab
 from ner.vocab import create_vocab
 
 
@@ -23,7 +23,7 @@ def load_embeddings(embeddings_path):
         except AttributeError:
             vectors[index, :] = np.random.rand(model.vector_size)
             i += 1
-    return vectors, word2index
+    return Vocab(word2index, vectors)
 
 
 def load_embedding_file(embeddings_path):
@@ -31,8 +31,7 @@ def load_embedding_file(embeddings_path):
     if os.path.isfile(embeddings_path + '.model'):
         model = KeyedVectors.load(embeddings_path + ".model")
     if os.path.isfile(embeddings_path + '.vec'):
-        model =  KeyedVectors.load_word2vec_format(embeddings_path + '.vec')
+        model = KeyedVectors.load_word2vec_format(embeddings_path + '.vec')
     if model is None:
         raise Exception("No vaild path to embeddings")
     return model
-

@@ -1,10 +1,8 @@
-from copy import deepcopy, copy
-from random import shuffle
+from copy import deepcopy
 
 import torch
 from sklearn.model_selection import train_test_split
 from torch.nn import Embedding
-from ner.preprocess import preprocess_training_data
 from ner.tree import config
 from ner.tree.config import tree_config
 from ner.tree.data.dataset import SSTDataset

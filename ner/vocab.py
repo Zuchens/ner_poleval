@@ -1,11 +1,11 @@
 import json
 
-from ner.config import parameters
+from ner.config import config_parameters
 from ner.treebank_span import TreebankSpanTokenizer
 
 
-def add_train_words_to_vocabulary(vocabulary, i, name):
-    with open(parameters[name]) as f:
+def add_words_to_vocabulary(vocabulary, i, name):
+    with open(config_parameters[name]) as f:
         unprocessed_data = json.load(f)["texts"]
     for sentence in unprocessed_data:
         for word in sentence['tokens']:
@@ -19,6 +19,6 @@ def add_train_words_to_vocabulary(vocabulary, i, name):
 def create_vocab():
     vocabulary = {'PAD': 0, 'UNKNOWN': 1}
     i = 2
-    i = add_train_words_to_vocabulary(vocabulary, i, "train_dataset_path")
-    add_train_words_to_vocabulary(vocabulary, i, "test_dataset_path")
+    i = add_words_to_vocabulary(vocabulary, i, "train_dataset_path")
+    add_words_to_vocabulary(vocabulary, i, "test_dataset_path")
     return vocabulary

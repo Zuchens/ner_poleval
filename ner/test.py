@@ -4,15 +4,14 @@ import nltk
 import numpy as np
 from keras_preprocessing.sequence import pad_sequences
 from tqdm import tqdm
-from ner.config import parameters
-from ner.preprocess import create_features
+from ner.config import config_parameters
+from ner.preprocess.preprocess import create_features
 from ner.treebank_span import TreebankSpanTokenizer
-from ner.utils import split_by_sentence_train
 
 
 def predict_test(label2idx, model, word2index, model_params):
-    if parameters["use_test_file"]:
-        with open(parameters["test_dataset_path"]) as f:
+    if config_parameters["use_test_file"]:
+        with open(config_parameters["test_dataset_path"]) as f:
             test_data = json.load(f)
 
         # prepare_data(categories, dependencies, dependencyLabels, features, input, label2idx, model_params)
