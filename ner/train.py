@@ -1,133 +1,231 @@
-import json
-import os
-
-import keras
-from sklearn.metrics import confusion_matrix
 import numpy as np
+from collections import defaultdict
+from keras_preprocessing.sequence import pad_sequences
+from matplotlib.pyplot import clf
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 
-from ner.config import parameters, search_parameters
-from ner.dataset import load_word_vectors, load_word_vectors_with_dictionary
-from ner.dataset import load_word_vectors_with_dictionary
-from ner.model import create_model
-from ner.preprocess import preprocess_training_data
-from ner.test import predict_test
-from ner.treebank_span import TreebankSpanTokenizer
+from ner.common.phrase import Phrase
+from ner.config import config_parameters
+from ner.simple.model import create_model
+import json
+import tensorflow as tf
+
+sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
+
+def get_features(sentences, padding, dep2idx):
+    features = np.array([sentence.get_padded_features(padding) for sentence in sentences])
+    dependencies = np.array([sentence.get_padded_dependencies(padding) for sentence in sentences])
+    dependencies = np.reshape(dependencies, (features.shape[0], features.shape[1], 1))
+    dep_labels = []
+    for sentence in sentences:
+        dep_labels.append(one_hot_encode(sentence.get_padded_dependency_labels_idx(padding), dep2idx))
+    dep_labels = np.array(dep_labels)
+    A = np.concatenate((features, dependencies, dep_labels), axis=2)
+    return A
 
 
-def train_and_eval(vectors, word2index, model_params):
-    idx_iobs, input, label2idx, features = preprocess_training_data(word2index, model_params)
-    features = np.asarray(features)
-    target = one_hot_encode(idx_iobs, label2idx)
+def train_and_eval(parameters, label2idx, vocab, sentences, dep2idx):
+    print(json.dumps(label2idx, indent=2))
 
-    input_train, input_val, uppercase_feature_train, uppercase_feature_val, target_train, target_val = train_test_split(
-        input,
-        features,
-        target,
-        test_size=parameters["validation_size"])
-
-    model = create_model(vectors, emb_features=vectors.shape[1], feature_size=3, maxlen=model_params["padding"],
-                         output_size=len(target_train[0][0]), model_parameters=model_params)
-
-    idx2label = {v: k for k, v in label2idx.items()}
-
-    model.fit([np.asarray(input_train), np.asarray(uppercase_feature_train)], np.asarray(target_train), batch_size=16,
-              nb_epoch=parameters["epochs"],
-              validation_split=0.1,
-              verbose=2)
-
-    loss, train_accuracy = model.evaluate([np.asarray(input_train), np.asarray(uppercase_feature_train)],
-                                          np.asarray(target_train), verbose=2)
+    data_train, data_val = train_test_split(sentences, test_size=config_parameters["validation_size"], shuffle=True)
+    features_train = get_features(data_train, parameters["padding"], dep2idx)
+    targets_train = get_targets(label2idx, parameters, data_train)
+    input_train = get_input(parameters, data_train, vocab)
+    model, train_accuracy = train(input_train, parameters, targets_train, features_train, vocab.vectors)
+    print('Accuracy train: %f\n' % (train_accuracy * 100))
     values = 'Accuracy train: %f\n' % (train_accuracy * 100)
 
-    values += test_validation(idx2label, input_val, model, target_val, uppercase_feature_val, word2index, model_params)
+    features_val = get_features(data_val, parameters["padding"], dep2idx)
+    targets_val = get_targets(label2idx, parameters, data_val)
+    input_val = get_input(parameters, data_val, vocab)
 
-    test_data = predict_test(idx2label, model, word2index, model_params)
-    print(values)
+    idx2label = {v: k for k, v in label2idx.items()}
+    test_validation(idx2label, input_val, model, targets_val, features_val, vocab.vocabulary, parameters, sentences)
 
-    # serialize model to JSON
-    model_json = model.to_json()
-    with open("generated/model.json", "w") as json_file:
-        json_file.write(model_json)
-    # serialize weights to HDF5
-    model.save_weights("generated/model.h5")
-    print("Saved model to disk")
-
-    return values, test_data
+    return values, model, idx2label
 
 
-def test_validation(idx2label, input_val, model, target_val, uppercase_feature_val, word2index, model_params):
-    index2word = dict((v, k) for k, v in word2index.items())
-    loss, val_accuracy = model.evaluate([np.asarray(input_val), np.asarray(uppercase_feature_val)],
-                                        np.asarray(target_val), verbose=2)
-    values = 'Accuracy val: %f \n' % (val_accuracy * 100)
-    val_predictions = model.predict([np.asarray(input_val), np.asarray(uppercase_feature_val)], verbose=2)
+def get_input(parameters, sentences, vocab):
+    return np.array(
+        [sentence.get_padded_words_idx(parameters["padding"], vocab.vocabulary["PAD"]) for sentence in sentences])
+
+
+def get_targets(label2idx, parameters, sentences):
+    target = []
+    for sentence in sentences:
+        target.append(one_hot_encode(sentence.get_padded_target(parameters["padding"]), label2idx))
+    return np.array(target)
+
+def train(input_train, model_params, target_train, uppercase_feature_train, vectors):
+    import numpy as np
+    class_weight = {x: 25 for x in range(0, target_train.shape[2])}
+    class_weight[0] = 1
+    class_weight[1] = 2
+    model = create_model(vectors, emb_features=vectors.shape[1], feature_size=uppercase_feature_train.shape[2],
+                         maxlen=model_params["padding"],
+                         output_size=len(target_train[0][0]), model_parameters=model_params, class_weights=class_weight)
+    history = model.fit([input_train, uppercase_feature_train], target_train,
+                        batch_size=128,
+                        nb_epoch=config_parameters["epochs"],
+                        validation_split=0.1,
+                        verbose=2)
+    import matplotlib.pyplot as plt
+    print(history.history.keys())
+    plt.plot(history.history['acc'])
+    plt.plot(history.history['val_acc'])
+    plt.title('model accuracy')
+    plt.ylabel('accuracy')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.savefig('accuracy.png')
+
+    clf()
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('model loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.savefig('loss.png')
+
+    # loss, train_accuracy = model.evaluate([np.asarray(input_train), np.asarray(uppercase_feature_train)],
+    #                                       np.asarray(target_train), verbose=2)
+    return model, 0
+
+
+# def test(model, categories, input, label2idx, features, dependencies, dependencyLabels, model_params):
+#     print("Prepare test")
+#     input = pad_sequences(input, maxlen=model_params["padding"], padding="post", truncating="post")
+#
+#     features = np.array(pad_sequences(features, maxlen=model_params["padding"], padding="post", truncating="post"))
+#     dependencies = np.reshape(
+#         np.array(pad_sequences(dependencies, maxlen=model_params["padding"], padding="post", truncating="post")),
+#         (features.shape[0], features.shape[1], 1))
+#
+#     dependencyLabelsArray = np.array(
+#         pad_sequences(dependencyLabels[0], maxlen=model_params["padding"], padding="post", truncating="post"))
+#     dependencyLabelsArray = one_hot_encode(dependencyLabelsArray, dependencyLabels[1])
+#
+#     features = np.concatenate((features, dependencies, dependencyLabelsArray), axis=2)
+#
+#     categories = pad_sequences(categories, maxlen=model_params["padding"], padding="post", truncating="post")
+#     target = one_hot_encode(categories, label2idx)
+#     predictions = model.predict([np.asarray(input), np.asarray(features)], batch_size=128, verbose=2)
+#
+#     print("Test")
+#     all = 0.01
+#     true = 0
+#     for sent_idx in tqdm(range(input.shape[0])):
+#
+#         for token_idx in range(input.shape[1]):
+#             if token_idx >= model_params["padding"]:
+#                 break
+#             if 0 != input[sent_idx][token_idx]:
+#                 idx = np.argmax(predictions[sent_idx][token_idx])
+#                 if idx != 0 and idx != 1:
+#                     if np.argmax(target[sent_idx][token_idx]) == idx:
+#                         true += 1
+#
+#                     all += 1
+#     print("Test evaluation")
+#     print(true / all)
+
+
+def test_validation(idx2label, input_val, model, target_val, uppercase_feature_val, vocabulary, model_params, offsets):
+    index2word = dict((v, k) for k, v in vocabulary.items())
+    loss, val_accuracy = model.evaluate([input_val, uppercase_feature_val],target_val, verbose=2)
+    print('Accuracy val (default): %f \n' % (val_accuracy * 100))
+    val_predictions = model.predict([input_val, uppercase_feature_val], verbose=2)
+    print("Test evaluation")
+    # print(val_predictions)
     all = 0
     true = 0
+    labels = ["persName", "persName_addName", "persName_surname", "persName_forename",
+              "placeName_settlement", "placeName_country", "placeName_district", "placeName_bloc", "placeName_region",
+              "placeName",
+              "orgName", "date", "time", "geogName"]
+
+    predictions = []
+    targets = []
+
     for sent_idx in range(input_val.shape[0]):
+        predictions_sent = dict()
+        for i in labels:
+            predictions_sent[i] = [0 for x in range(input_val.shape[1])]
+
+        targets_sent = dict()
+        for i in labels:
+            targets_sent[i] = [0 for x in range(input_val.shape[1])]
+
         for token_idx in range(input_val.shape[1]):
-            if token_idx >= model_params["padding"]:
-                break
-            if 0 != input_val[sent_idx][token_idx]:
-                idx = np.argmax(val_predictions[sent_idx][token_idx])
-                if idx2label[idx] != 'O-P':
-                    if np.argmax(target_val[sent_idx][token_idx]) == idx:
-                        true += 1
-                    all += 1
-                    # print(str(input_val[sent_idx][token_idx]) + " " + index2word[] + " " +idx2label[idx])
+            idx = np.argmax(val_predictions[sent_idx][token_idx])
+            idx_target = np.argmax(target_val[sent_idx][token_idx])
+            if idx_target > 1 or (idx_target == 1 and idx > 2):
+                if idx_target == idx:
+                    true += 1
+                else:
+                    print("{} : {}\t{}".format(idx2label[idx], idx2label[idx_target],
+                                               index2word[input_val[sent_idx][token_idx]]))
+                sentence_pred = idx2label[idx].split("-")
+                for i in sentence_pred:
+                    if (i.startswith("B")):
+                        predictions_sent[i[2:]][token_idx] = 2
+                    if (i.startswith("I")):
+                        predictions_sent[i[2:]][token_idx] = 1
+
+                sentence_target = idx2label[idx_target].split("-")
+                for i in sentence_target:
+                    if (i.startswith("B")):
+                        targets_sent[i[2:]][token_idx] = 2
+                    if (i.startswith("I")):
+                        targets_sent[i[2:]][token_idx] = 1
+                all += 1
+        predictions.append(predictions_sent)
+        targets.append(targets_sent)
+
+    save_predictions(offsets, targets, "out/validation_target.json")
+    save_predictions(offsets, predictions, "out/validation_prediction.json")
     print('Confusion Matrix')
-    t = np.argmax(target_val, axis=1).flatten()
+    predictions = np.argmax(target_val, axis=1).flatten()
     p = np.argmax(val_predictions, axis=1).flatten()
 
-    np.savetxt('test.out', confusion_matrix(t, p), delimiter=',')
+    np.savetxt('test.out', confusion_matrix(predictions, p), delimiter=',')
     acc = true / all if all != 0 else 0
-    print( " Value on entitied " + str(acc))
-    return values + " Value on entitied " + str(acc)
+    print("Accuracy on the validation set " + str(acc))
 
 
-def one_hot_encode(idx_iobs, label2idx):
-    mlb_targets = OneHotEncoder(sparse=False)
-    mlb_targets.fit([[x] for x in label2idx.values()])
-    target = [mlb_targets.transform([[i] for i in x]) for x in idx_iobs]
-    return target
+def save_predictions(sentence, targets, name):
+    phrase_per_sentence = defaultdict(list)
+    for sentence_pred, sentence in zip(targets, sentence):
+        text = sentence.doc_text
+        offsets = sentence.offsets
+        phrases_predictions = []
+        for category in sentence_pred.keys():
+            idx = 0
+            while idx < len(sentence_pred[category]):
+                if sentence_pred[category][idx] == 1:
+                    phrase = Phrase(idx)
+                    while sentence_pred[category][idx] == 1:
+                        phrase.end_idx = idx
+                        idx += 1
+                    phrase.category = category
+                    phrase.start = offsets[phrase.start_idx]
+                    phrase.end = offsets[phrase.end_idx + 1] \
+                        if phrase.end_idx + 1 < len(offsets) else offsets[phrase.end_idx]
+                    if text[phrase.start: phrase.end].endswith(" "):
+                        phrase.end -= 1
+                    phrase.text = text[phrase.start: phrase.end]
+                    phrases_predictions.append(str(phrase))
+                idx += 1
+        phrase_per_sentence[text].extend(phrases_predictions)
+    phrase_per_sentence = [{"text": key, "answers": "\n".join(values)} for key, values in phrase_per_sentence.items()]
+    with open(name, "w") as f:
+        json.dump(phrase_per_sentence, f, indent=2, ensure_ascii=False)
 
 
-def save_results():
-
-    if not os.path.exists("output"):
-        os.mkdir("output")
-    import datetime
-    dt = datetime.datetime.now()
-    with open('output/train_results-' + str(dt) + '.csv', 'w+') as f:
-        f.write('{}\t{}'.format(search_parameters, values))
-    with open('output/test_results-' + str(dt) + '.json', 'w+') as f:
-        json.dump(test_data, f, indent=2)
-
-
-if __name__ == "__main__":
-
-    with open(parameters["train_dataset_path"]) as f:
-        unprocessed_data = json.load(f)["texts"]
-    word2index = {'PAD': 0, "UNKNOWN": 1}
-    i = 1
-    for sentence in unprocessed_data:
-        for word in sentence:
-            if word not in word2index:
-                word2index[word] = i
-                i = i + 1
-    with open(parameters["test_dataset_path"]) as f:
-        test_data = json.load(f)
-    tokenizer = TreebankSpanTokenizer()
-    for doc in test_data:
-        doc['answers'] = ""
-        sentence = tokenizer.tokenize(doc["text"])
-        for word in sentence:
-            if word not in word2index:
-                word2index[word] = i
-                i = i + 1
-
-    vectors, word2index = load_word_vectors_with_dictionary(parameters["emb_file"], word2index)
-    values, test_data = train_and_eval(vectors, word2index, search_parameters)
-    save_results()
+def one_hot_encode(categories, label2idx):
+    one_hot_categories = OneHotEncoder(sparse=False)
+    one_hot_categories.fit([[x] for x in label2idx.values()])
+    return one_hot_categories.transform([[i] for i in categories])
