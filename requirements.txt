@@ -18,7 +18,7 @@ Keras==2.2.2
 Keras-Applications==1.0.4
 Keras-Preprocessing==1.0.2
 Markdown==3.0.1
-nltk==3.4.4
+nltk==3.4.5
 numexpr==2.6.9
 protobuf==3.6.0
 pydot==1.4.1
